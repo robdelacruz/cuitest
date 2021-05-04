@@ -42,6 +42,22 @@ func printcenter(s string, x, y int, fg, bg tb.Attribute, w int) {
 	}
 }
 
+func printpadded(s string, nleftspace, nrightspace int, x, y int, fg, bg tb.Attribute) {
+	print(strings.Repeat(" ", nleftspace), x, y, fg, bg)
+	print(s, x+nleftspace, y, fg, bg)
+	print(strings.Repeat(" ", nrightspace), x+nleftspace+len(s), y, fg, bg)
+}
+
+func printpaddedcenter(s string, x, y int, fg, bg tb.Attribute, w int) {
+	xcenter := x
+	if w > len(s) {
+		xcenter += w/2 - len(s)/2
+	}
+	nleft := xcenter - x
+	nright := w - nleft - len(s)
+	printpadded(s, nleft, nright, x, y, fg, bg)
+}
+
 func clearRect(rect Rect, bg tb.Attribute) {
 	for y := rect.y; y < rect.y+rect.h; y++ {
 		for x := rect.x; x < rect.x+rect.w; x++ {
@@ -142,15 +158,15 @@ func (w *MenuWidget) Draw() {
 		if w.isel == i {
 			// Highlight selected menu item
 			if w.o&MenuWidgetCenter != 0 {
-				printcenter(item, w.rect.x, y, w.bg, w.fg, w.rect.w)
+				printpaddedcenter(item, w.rect.x, y, w.bg, w.fg, w.rect.w)
 			} else {
-				print(item, w.rect.x+1, y, w.bg, w.fg)
+				printpadded(item, 1, w.rect.w-len(item)-1, w.rect.x, y, w.bg, w.fg)
 			}
 		} else {
 			if w.o&MenuWidgetCenter != 0 {
-				printcenter(item, w.rect.x, y, w.fg, w.bg, w.rect.w)
+				printpaddedcenter(item, w.rect.x, y, w.fg, w.bg, w.rect.w)
 			} else {
-				print(item, w.rect.x+1, y, w.fg, w.bg)
+				printpadded(item, 1, w.rect.w-len(item)-1, w.rect.x, y, w.fg, w.bg)
 			}
 		}
 		y++

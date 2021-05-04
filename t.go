@@ -87,7 +87,8 @@ func NewMainWindow() *MainWindow {
 	}
 	//w.menu = NewMenuWidget(Rect{10, 10, 0, 4}, items, tb.Attribute(156), tb.Attribute(17), MenuWidgetCenter)
 	//w.menu = NewMenuWidget(Rect{10, 10, 0, 4}, items, tb.Attribute(156), tb.Attribute(17), 0)
-	w.menu = NewMenuWidget(Rect{10, 10, 0, 4}, items, tb.Attribute(156), tb.Attribute(17), MenuWidgetBox|MenuWidgetCenter)
+	w.menu = NewMenuWidget(Rect{10, 10, 0, 7}, items, tb.Attribute(156), tb.Attribute(17), MenuWidgetBox|MenuWidgetCenter)
+	//w.menu = NewMenuWidget(Rect{10, 10, 0, 4}, items, tb.Attribute(156), tb.Attribute(17), MenuWidgetNormal)
 
 	w.isMenuActive = false
 	w.activeWidget = w.smiley
