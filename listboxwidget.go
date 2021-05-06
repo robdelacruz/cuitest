@@ -54,6 +54,7 @@ func NewListboxWidget(rect Rect, fg, bg tb.Attribute, cb WidgetEventCB, items []
 		Sel:       0,
 		Scrollpos: 0,
 	}
+	w.PostSelItemEvent()
 	return &w
 }
 
@@ -99,6 +100,7 @@ func (w *ListboxWidget) HandleEvent(e tb.Event) bool {
 			w.Sel = len(w.Items) - 1
 		}
 		w.AdjustScroll()
+		w.PostSelItemEvent()
 		return true
 	case tb.KeyArrowDown:
 		w.Sel++
@@ -106,12 +108,14 @@ func (w *ListboxWidget) HandleEvent(e tb.Event) bool {
 			w.Sel = 0
 		}
 		w.AdjustScroll()
+		w.PostSelItemEvent()
 		return true
 	case tb.KeyEnter:
 		if w.Cb != nil {
 			we := WidgetEvent{
 				Code: WidgetEventEnter,
 				P1:   w.Sel,
+				Pstr: w.Items[w.Sel],
 			}
 			w.Cb(&we)
 		}
@@ -142,5 +146,27 @@ func (w *ListboxWidget) AdjustScroll() {
 		w.Scrollpos = 0
 	} else if w.Scrollpos > len(w.Items)-1 {
 		w.Scrollpos = len(w.Items) - 1
+	}
+}
+
+func (w *ListboxWidget) SelItem() (int, string) {
+	if len(w.Items) == 0 {
+		return -1, ""
+	}
+	return w.Sel, w.Items[w.Sel]
+}
+
+func (w *ListboxWidget) PostSelItemEvent() {
+	if len(w.Items) == 0 {
+		return
+	}
+
+	if w.Cb != nil {
+		we := WidgetEvent{
+			Code: WidgetEventSel,
+			P1:   w.Sel,
+			Pstr: w.Items[w.Sel],
+		}
+		w.Cb(&we)
 	}
 }

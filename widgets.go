@@ -31,6 +31,7 @@ type WidgetEventCB func(we *WidgetEvent)
 const (
 	WidgetEventEnter int = iota
 	WidgetEventEsc
+	WidgetEventSel
 )
 
 func print(s string, x, y int, fg, bg tb.Attribute) {

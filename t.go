@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
-	//	"strings"
 
 	tb "github.com/nsf/termbox-go"
 )
@@ -59,6 +59,7 @@ type MainWindow struct {
 	width, height int
 
 	smileyw *Smiley
+	labelw  *LabelWidget
 	popupw  Widget
 }
 
@@ -71,14 +72,29 @@ func NewMainWindow() *MainWindow {
 	w.smileyw.X = 5
 	w.smileyw.Y = 5
 
+	w.labelw = NewLabelWidget(Rect{5, 15, 0, 0}, tb.Attribute(156), tb.Attribute(17), "(label)", 0)
+
 	return &w
 }
 
 func (w *MainWindow) popupCB(we *WidgetEvent) {
 	if we.Code == WidgetEventEnter {
+		_, ok := w.popupw.(*MenuWidget)
+		if ok {
+			sel := we.P1
+			w.labelw.SetText(fmt.Sprintf("Selected menu option %d", sel))
+		}
+		_, ok = w.popupw.(*ListboxWidget)
+		if ok {
+			selstr := we.Pstr
+			w.labelw.SetText(fmt.Sprintf("Selected listbox item %s", selstr))
+		}
 		w.popupw = nil
 	} else if we.Code == WidgetEventEsc {
+		w.labelw.SetText("Canceled operation")
 		w.popupw = nil
+	} else if we.Code == WidgetEventSel {
+		w.labelw.SetText(we.Pstr)
 	}
 }
 
@@ -86,6 +102,7 @@ func (w *MainWindow) Draw() {
 	tb.Clear(0, 0)
 
 	w.smileyw.Draw()
+	w.labelw.Draw()
 
 	if w.popupw != nil {
 		w.popupw.Draw()
@@ -112,7 +129,7 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 			"Option 9 123",
 			"Option 10",
 		}
-		w.popupw = NewMenuWidget(Rect{10, 10, 0, 0}, tb.Attribute(156), tb.Attribute(17), w.popupCB, items, MenuWidgetBox|MenuWidgetCenter)
+		w.popupw = NewMenuWidget(Rect{5, 0, 0, 0}, tb.Attribute(156), tb.Attribute(17), w.popupCB, items, MenuWidgetBox|MenuWidgetCenter)
 		return true
 	} else if e.Ch == 'l' {
 		items := []string{
@@ -122,7 +139,7 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 			"of the party.",
 			"-- typing drill",
 		}
-		w.popupw = NewListboxWidget(Rect{10, 20, 0, 0}, tb.Attribute(156), tb.Attribute(17), w.popupCB, items, ListboxWidgetBox)
+		w.popupw = NewListboxWidget(Rect{10, 0, 0, 0}, tb.Attribute(156), tb.Attribute(17), w.popupCB, items, ListboxWidgetBox)
 		return true
 	}
 
