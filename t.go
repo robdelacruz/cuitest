@@ -85,15 +85,19 @@ func NewMainWindow() *MainWindow {
 		"Option 9 123",
 		"Option 10",
 	}
-	//w.menu = NewMenuWidget(Rect{10, 10, 0, 4}, items, tb.Attribute(156), tb.Attribute(17), MenuWidgetCenter)
-	//w.menu = NewMenuWidget(Rect{10, 10, 0, 4}, items, tb.Attribute(156), tb.Attribute(17), 0)
-	w.menu = NewMenuWidget(Rect{10, 10, 0, 7}, items, tb.Attribute(156), tb.Attribute(17), MenuWidgetBox|MenuWidgetCenter)
-	//w.menu = NewMenuWidget(Rect{10, 10, 0, 4}, items, tb.Attribute(156), tb.Attribute(17), MenuWidgetNormal)
+	w.menu = NewMenuWidget(Rect{10, 10, 0, 0}, tb.Attribute(156), tb.Attribute(17), w.MenuCB, items, MenuWidgetBox|MenuWidgetCenter)
 
 	w.isMenuActive = false
 	w.activeWidget = w.smiley
 
 	return &w
+}
+
+func (w *MainWindow) MenuCB(we *WidgetEvent) {
+	if we.Code == WidgetEventEnter {
+		w.isMenuActive = false
+		w.activeWidget = w.smiley
+	}
 }
 
 func (w *MainWindow) Draw() {
@@ -113,15 +117,13 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 		return false
 	}
 
-	switch e.Key {
-	case tb.KeyCtrlM:
-		w.isMenuActive = !w.isMenuActive
-		if w.isMenuActive {
-			w.activeWidget = w.menu
-		} else {
-			w.activeWidget = w.smiley
-		}
+	if e.Ch == 't' {
+		w.isMenuActive = true
+		w.activeWidget = w.menu
 		return true
+	}
+
+	switch e.Key {
 	}
 
 	if w.activeWidget != nil {
