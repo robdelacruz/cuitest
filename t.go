@@ -57,11 +57,9 @@ func pollEvents(chev chan tb.Event) {
 
 type MainWindow struct {
 	width, height int
-	isMenuActive  bool
 
-	smiley       *Smiley
-	menu         *MenuWidget
-	activeWidget Widget
+	smileyw *Smiley
+	popupw  Widget
 }
 
 func NewMainWindow() *MainWindow {
@@ -69,67 +67,69 @@ func NewMainWindow() *MainWindow {
 	w.width = _termW
 	w.height = _termH
 
-	w.smiley = &Smiley{}
-	w.smiley.X = 5
-	w.smiley.Y = 5
-
-	items := []string{
-		"Option 1 abc",
-		"Option 2 def",
-		"Option 3 ghijkl",
-		"Option 4 some more text",
-		"Option 5 xyz",
-		"Option 6 lmnop",
-		"Option 7 qrstuvw",
-		"Option 8 12345",
-		"Option 9 123",
-		"Option 10",
-	}
-	w.menu = NewMenuWidget(Rect{10, 10, 0, 0}, tb.Attribute(156), tb.Attribute(17), w.MenuCB, items, MenuWidgetBox|MenuWidgetCenter)
-
-	w.isMenuActive = false
-	w.activeWidget = w.smiley
+	w.smileyw = &Smiley{}
+	w.smileyw.X = 5
+	w.smileyw.Y = 5
 
 	return &w
 }
 
-func (w *MainWindow) MenuCB(we *WidgetEvent) {
+func (w *MainWindow) popupCB(we *WidgetEvent) {
 	if we.Code == WidgetEventEnter {
-		w.isMenuActive = false
-		w.activeWidget = w.smiley
+		w.popupw = nil
+	} else if we.Code == WidgetEventEsc {
+		w.popupw = nil
 	}
 }
 
 func (w *MainWindow) Draw() {
 	tb.Clear(0, 0)
 
-	w.smiley.Draw()
+	w.smileyw.Draw()
 
-	if w.isMenuActive {
-		w.menu.Draw()
+	if w.popupw != nil {
+		w.popupw.Draw()
 	}
 
 	tb.Flush()
 }
 
 func (w *MainWindow) HandleEvent(e tb.Event) bool {
-	if e.Type != tb.EventKey {
-		return false
+	if w.popupw != nil {
+		return w.popupw.HandleEvent(e)
 	}
 
-	if e.Ch == 't' {
-		w.isMenuActive = true
-		w.activeWidget = w.menu
+	if e.Ch == 'm' {
+		items := []string{
+			"Menu Option 1 abc",
+			"Option 2 def",
+			"Option 3 ghijkl",
+			"Option 4 some more text",
+			"Option 5 xyz",
+			"Option 6 lmnop",
+			"Option 7 qrstuvw",
+			"Option 8 12345",
+			"Option 9 123",
+			"Option 10",
+		}
+		w.popupw = NewMenuWidget(Rect{10, 10, 0, 0}, tb.Attribute(156), tb.Attribute(17), w.popupCB, items, MenuWidgetBox|MenuWidgetCenter)
+		return true
+	} else if e.Ch == 'l' {
+		items := []string{
+			"Now is the time",
+			"for all good men",
+			"to come to the aid",
+			"of the party.",
+			"-- typing drill",
+		}
+		w.popupw = NewListboxWidget(Rect{10, 20, 0, 0}, tb.Attribute(156), tb.Attribute(17), w.popupCB, items, ListboxWidgetBox)
 		return true
 	}
 
 	switch e.Key {
 	}
 
-	if w.activeWidget != nil {
-		return w.activeWidget.HandleEvent(e)
-	}
-	return true
+	return w.smileyw.HandleEvent(e)
 }
 
 type Smiley struct {
