@@ -115,6 +115,8 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 	if w.popupw != nil {
 		return w.popupw.HandleEvent(e)
 	}
+	fg := tb.Attribute(156)
+	bg := tb.Attribute(17)
 
 	if e.Ch == 'm' {
 		items := []string{
@@ -129,7 +131,7 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 			"Option 9 123",
 			"Option 10",
 		}
-		w.popupw = NewMenuWidget(Rect{5, 0, 0, 0}, tb.Attribute(156), tb.Attribute(17), w.popupCB, items, MenuWidgetBox|MenuWidgetCenter)
+		w.popupw = NewMenuWidget(Rect{5, 0, 0, 0}, fg, bg, w.popupCB, items, WidgetBox|WidgetCenter)
 		return true
 	} else if e.Ch == 'l' {
 		items := []string{
@@ -139,7 +141,25 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 			"of the party.",
 			"-- typing drill",
 		}
-		w.popupw = NewListboxWidget(Rect{10, 0, 0, 0}, tb.Attribute(156), tb.Attribute(17), w.popupCB, items, ListboxWidgetBox)
+		w.popupw = NewListboxWidget(Rect{10, 0, 0, 0}, fg, bg, w.popupCB, items, WidgetBox)
+		return true
+	} else if e.Ch == 't' {
+		cols := []CellSetting{
+			CellSetting{0, 15, 0, 0},
+			CellSetting{15, 15, 0, 0},
+			CellSetting{25, 10, 0, 0},
+		}
+		headings := []string{"col1", "col2", "col3"}
+		rows := []TableRow{
+			TableRow{"abc", "defghi", "jklmn"},
+			TableRow{"ABC", "DEFGHI", "JKLMN"},
+			TableRow{"12345", "678", "9012"},
+			TableRow{"Now is", "the time", "for all"},
+			TableRow{"good men", "to come to", "the aid"},
+			TableRow{"of the", "party.", ""},
+			TableRow{"12345", "678", "9012"},
+		}
+		w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, fg, bg, fg, bg, w.popupCB, cols, headings, rows, WidgetBox)
 		return true
 	}
 

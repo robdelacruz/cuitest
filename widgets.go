@@ -18,8 +18,16 @@ type Widget interface {
 	HandleEvent(e tb.Event) bool
 }
 
+type WidgetEventCode int
+
+const (
+	WidgetEventEnter WidgetEventCode = iota
+	WidgetEventEsc
+	WidgetEventSel
+)
+
 type WidgetEvent struct {
-	Code   int
+	Code   WidgetEventCode
 	P1     int
 	P2     int
 	Pnum   float32
@@ -28,10 +36,12 @@ type WidgetEvent struct {
 }
 type WidgetEventCB func(we *WidgetEvent)
 
+type WidgetSetting uint64
+
 const (
-	WidgetEventEnter int = iota
-	WidgetEventEsc
-	WidgetEventSel
+	WidgetNormal WidgetSetting = 1 << iota
+	WidgetCenter
+	WidgetBox
 )
 
 func print(s string, x, y int, fg, bg tb.Attribute) {
@@ -55,6 +65,12 @@ func printcenter(s string, x, y int, fg, bg tb.Attribute, w int) {
 	for _, c := range s {
 		tb.SetCell(x, y, c, fg, bg)
 		x++
+	}
+}
+
+func printspaces(nspace, x, y int, fg, bg tb.Attribute) {
+	for i := 0; i < nspace; i++ {
+		tb.SetCell(x+i, y, ' ', fg, bg)
 	}
 }
 

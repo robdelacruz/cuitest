@@ -4,16 +4,14 @@ import (
 	tb "github.com/nsf/termbox-go"
 )
 
-type LabelWidgetSettings uint64
-
 type LabelWidget struct {
 	Rect     Rect
 	Fg, Bg   tb.Attribute
 	Text     string
-	Settings LabelWidgetSettings
+	Settings WidgetSetting
 }
 
-func NewLabelWidget(rect Rect, fg, bg tb.Attribute, text string, settings LabelWidgetSettings) *LabelWidget {
+func NewLabelWidget(rect Rect, fg, bg tb.Attribute, text string, settings WidgetSetting) *LabelWidget {
 	if rect.H == 0 {
 		rect.H = 1
 	}

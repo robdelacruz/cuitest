@@ -4,24 +4,17 @@ import (
 	tb "github.com/nsf/termbox-go"
 )
 
-type ListboxWidgetSettings uint64
-
-const (
-	ListboxWidgetNormal ListboxWidgetSettings = 1 << iota
-	ListboxWidgetBox
-)
-
 type ListboxWidget struct {
 	Rect      Rect
 	Fg, Bg    tb.Attribute
 	Cb        WidgetEventCB
 	Items     []string
-	Settings  ListboxWidgetSettings
+	Settings  WidgetSetting
 	Sel       int
 	Scrollpos int
 }
 
-func NewListboxWidget(rect Rect, fg, bg tb.Attribute, cb WidgetEventCB, items []string, settings ListboxWidgetSettings) *ListboxWidget {
+func NewListboxWidget(rect Rect, fg, bg tb.Attribute, cb WidgetEventCB, items []string, settings WidgetSetting) *ListboxWidget {
 	// If not specified, automatically set width and height based on listbox items.
 	if rect.H == 0 {
 		rect.H = len(items)
@@ -61,7 +54,7 @@ func NewListboxWidget(rect Rect, fg, bg tb.Attribute, cb WidgetEventCB, items []
 func (w *ListboxWidget) Draw() {
 	clearRect(w.Rect, w.Bg)
 
-	if w.Settings&ListboxWidgetBox != 0 {
+	if w.Settings&WidgetBox != 0 {
 		boxRect := Rect{w.Rect.X - 1, w.Rect.Y - 1, w.Rect.W + 2, w.Rect.H + 2}
 		drawBox(boxRect, w.Fg, w.Bg)
 	}

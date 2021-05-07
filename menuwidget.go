@@ -4,25 +4,17 @@ import (
 	tb "github.com/nsf/termbox-go"
 )
 
-type MenuWidgetSettings uint64
-
-const (
-	MenuWidgetNormal MenuWidgetSettings = 1 << iota
-	MenuWidgetCenter
-	MenuWidgetBox
-)
-
 type MenuWidget struct {
 	Rect      Rect
 	Fg, Bg    tb.Attribute
 	Cb        WidgetEventCB
 	Items     []string
-	Settings  MenuWidgetSettings
+	Settings  WidgetSetting
 	Sel       int
 	Scrollpos int
 }
 
-func NewMenuWidget(rect Rect, fg, bg tb.Attribute, cb WidgetEventCB, items []string, settings MenuWidgetSettings) *MenuWidget {
+func NewMenuWidget(rect Rect, fg, bg tb.Attribute, cb WidgetEventCB, items []string, settings WidgetSetting) *MenuWidget {
 	// If not specified, automatically set width and height based on menu items.
 	if rect.H == 0 {
 		rect.H = len(items)
@@ -61,7 +53,7 @@ func NewMenuWidget(rect Rect, fg, bg tb.Attribute, cb WidgetEventCB, items []str
 func (w *MenuWidget) Draw() {
 	clearRect(w.Rect, w.Bg)
 
-	if w.Settings&MenuWidgetBox != 0 {
+	if w.Settings&WidgetBox != 0 {
 		boxRect := Rect{w.Rect.X - 1, w.Rect.Y - 1, w.Rect.W + 2, w.Rect.H + 2}
 		drawBox(boxRect, w.Fg, w.Bg)
 	}
@@ -77,13 +69,13 @@ func (w *MenuWidget) Draw() {
 		item := w.Items[i]
 		if w.Sel == i {
 			// Highlight selected menu item
-			if w.Settings&MenuWidgetCenter != 0 {
+			if w.Settings&WidgetCenter != 0 {
 				printpaddedcenter(item, w.Rect.X, y, w.Bg, w.Fg, w.Rect.W)
 			} else {
 				printpadded(item, 1, w.Rect.W-len(item)-1, w.Rect.X, y, w.Bg, w.Fg)
 			}
 		} else {
-			if w.Settings&MenuWidgetCenter != 0 {
+			if w.Settings&WidgetCenter != 0 {
 				printpaddedcenter(item, w.Rect.X, y, w.Fg, w.Bg, w.Rect.W)
 			} else {
 				printpadded(item, 1, w.Rect.W-len(item)-1, w.Rect.X, y, w.Fg, w.Bg)
