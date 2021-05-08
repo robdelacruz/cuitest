@@ -27,6 +27,9 @@ func NewTableWidget(rect Rect, attrs WidgetAttributes, attrsHeading WidgetAttrib
 	// If not specified, automatically set width and height based on column settings.
 	if rect.H == 0 {
 		rect.H = len(rows)
+		if len(headings) > 0 {
+			rect.H += 1
+		}
 	}
 	if rect.W == 0 {
 		maxlen := 0
@@ -41,7 +44,12 @@ func NewTableWidget(rect Rect, attrs WidgetAttributes, attrsHeading WidgetAttrib
 	}
 
 	InitWidgetAttributes(&attrs)
-	InitWidgetAttributes(&attrsHeading)
+	if attrsHeading.Fg == 0 {
+		attrsHeading.Fg = attrs.Fg
+	}
+	if attrsHeading.Bg == 0 {
+		attrsHeading.Bg = attrs.Bg
+	}
 
 	w := TableWidget{
 		Rect:         rect,
@@ -69,11 +77,26 @@ func (w *TableWidget) Draw() {
 
 	starti := w.Scrollpos
 	endi := w.Scrollpos + w.Rect.H - 1
+
+	// Heading
+	y := w.Rect.Y
+	if len(w.Headings) > 0 {
+		for icol, heading := range w.Headings {
+			if icol > len(w.Cols)-1 {
+				continue
+			}
+			col := w.Cols[icol]
+			print(heading, w.Rect.X+col.X, y, w.AttrsHeading.Fg, w.AttrsHeading.Bg)
+		}
+		y++
+		endi = endi - 1
+	}
+
 	if endi > len(w.Rows)-1 {
 		endi = len(w.Rows) - 1
 	}
 
-	y := w.Rect.Y
+	// Rows
 	for irow := starti; irow <= endi; irow++ {
 		if w.Sel == irow {
 			printspaces(w.Rect.W, w.Rect.X, y, w.Attrs.Bg, w.Attrs.Fg)
@@ -153,6 +176,10 @@ func (w *TableWidget) HandleEvent(e tb.Event) bool {
 func (w *TableWidget) AdjustScroll() {
 	starti := w.Scrollpos
 	endi := w.Scrollpos + w.Rect.H - 1
+
+	if len(w.Headings) > 0 {
+		endi = endi - 1
+	}
 
 	if w.Sel < starti {
 		w.Scrollpos -= starti - w.Sel

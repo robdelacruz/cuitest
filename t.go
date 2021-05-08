@@ -124,20 +124,25 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 		return w.popupw.HandleEvent(e)
 	}
 
+	white := tb.Attribute(16)
 	black := tb.Attribute(17)
 	darkolivegreen := tb.Attribute(156)
 	darkorange := tb.Attribute(167)
 	grey39 := tb.Attribute(242)
 	plum1 := tb.Attribute(220)
-	//	gold1 := tb.Attribute(221)
+	gold1 := tb.Attribute(221)
 
 	attrs1 := WidgetAttributes{
-		Fg: darkolivegreen,
-		Bg: black,
+		Fg:          darkolivegreen,
+		Bg:          black,
+		HighlightFg: grey39,
+		HighlightBg: white,
 	}
 	attrs2 := WidgetAttributes{
-		Fg: darkorange,
-		Bg: black,
+		Fg:          darkorange,
+		Bg:          black,
+		HighlightFg: gold1,
+		HighlightBg: grey39,
 	}
 	attrs3 := WidgetAttributes{
 		Fg: plum1,
@@ -186,7 +191,8 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 			TableRow{"of the", "party.", ""},
 			TableRow{"12345", "678", "9012"},
 		}
-		w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, attrs3, attrs2, w.popupCB, cols, headings, rows, WidgetBox)
+		//w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, attrs3, attrs1, w.popupCB, cols, headings, rows, WidgetBox)
+		w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, attrs3, attrs1, w.popupCB, cols, headings, rows, WidgetBox)
 		return true
 	}
 
