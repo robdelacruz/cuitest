@@ -6,24 +6,24 @@ import (
 
 type TableRow []string
 type CellSetting struct {
-	X, W   int
-	Fg, Bg tb.Attribute
+	X, W  int
+	Attrs WidgetAttributes
 }
 
 type TableWidget struct {
-	Rect                 Rect
-	Fg, Bg               tb.Attribute
-	HeadingFg, HeadingBg tb.Attribute
-	Cb                   WidgetEventCB
-	Cols                 []CellSetting
-	Headings             []string
-	Rows                 []TableRow
-	Settings             WidgetSetting
-	Sel                  int
-	Scrollpos            int
+	Rect         Rect
+	Attrs        WidgetAttributes
+	AttrsHeading WidgetAttributes
+	Cb           WidgetEventCB
+	Cols         []CellSetting
+	Headings     []string
+	Rows         []TableRow
+	Settings     WidgetSetting
+	Sel          int
+	Scrollpos    int
 }
 
-func NewTableWidget(rect Rect, fg, bg, headingfg, headingbg tb.Attribute, cb WidgetEventCB, cols []CellSetting, headings []string, rows []TableRow, settings WidgetSetting) *TableWidget {
+func NewTableWidget(rect Rect, attrs WidgetAttributes, attrsHeading WidgetAttributes, cb WidgetEventCB, cols []CellSetting, headings []string, rows []TableRow, settings WidgetSetting) *TableWidget {
 	// If not specified, automatically set width and height based on column settings.
 	if rect.H == 0 {
 		rect.H = len(rows)
@@ -40,30 +40,31 @@ func NewTableWidget(rect Rect, fg, bg, headingfg, headingbg tb.Attribute, cb Wid
 		rect.W = maxlen + 1
 	}
 
+	InitWidgetAttributes(&attrs)
+	InitWidgetAttributes(&attrsHeading)
+
 	w := TableWidget{
-		Rect:      rect,
-		Fg:        fg,
-		Bg:        bg,
-		HeadingFg: headingfg,
-		HeadingBg: headingbg,
-		Cb:        cb,
-		Cols:      cols,
-		Headings:  headings,
-		Rows:      rows,
-		Settings:  settings,
-		Sel:       0,
-		Scrollpos: 0,
+		Rect:         rect,
+		Attrs:        attrs,
+		AttrsHeading: attrsHeading,
+		Cb:           cb,
+		Cols:         cols,
+		Headings:     headings,
+		Rows:         rows,
+		Settings:     settings,
+		Sel:          0,
+		Scrollpos:    0,
 	}
 
 	return &w
 }
 
 func (w *TableWidget) Draw() {
-	clearRect(w.Rect, w.Bg)
+	clearRect(w.Rect, w.Attrs.Bg)
 
 	if w.Settings&WidgetBox != 0 {
 		boxRect := Rect{w.Rect.X - 1, w.Rect.Y - 1, w.Rect.W + 2, w.Rect.H + 2}
-		drawBox(boxRect, w.Fg, w.Bg)
+		drawBox(boxRect, w.Attrs.Fg, w.Attrs.Bg)
 	}
 
 	starti := w.Scrollpos
@@ -75,7 +76,7 @@ func (w *TableWidget) Draw() {
 	y := w.Rect.Y
 	for irow := starti; irow <= endi; irow++ {
 		if w.Sel == irow {
-			printspaces(w.Rect.W, w.Rect.X, y, w.Bg, w.Fg)
+			printspaces(w.Rect.W, w.Rect.X, y, w.Attrs.Bg, w.Attrs.Fg)
 		}
 
 		row := w.Rows[irow]
@@ -84,17 +85,17 @@ func (w *TableWidget) Draw() {
 				continue
 			}
 			col := w.Cols[icol]
-			fg := w.Fg
-			if col.Fg != 0 {
-				fg = col.Fg
+			fg := w.Attrs.Fg
+			if col.Attrs.Fg != 0 {
+				fg = col.Attrs.Fg
 			}
-			bg := w.Bg
-			if col.Bg != 0 {
-				bg = col.Bg
+			bg := w.Attrs.Bg
+			if col.Attrs.Bg != 0 {
+				bg = col.Attrs.Bg
 			}
 			if w.Sel == irow {
 				// Highlight selected row
-				print(cell, w.Rect.X+col.X, y, bg, fg)
+				print(cell, w.Rect.X+col.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg)
 			} else {
 				print(cell, w.Rect.X+col.X, y, fg, bg)
 			}

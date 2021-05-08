@@ -6,7 +6,7 @@ import (
 
 type MenuWidget struct {
 	Rect      Rect
-	Fg, Bg    tb.Attribute
+	Attrs     WidgetAttributes
 	Cb        WidgetEventCB
 	Items     []string
 	Settings  WidgetSetting
@@ -14,7 +14,7 @@ type MenuWidget struct {
 	Scrollpos int
 }
 
-func NewMenuWidget(rect Rect, fg, bg tb.Attribute, cb WidgetEventCB, items []string, settings WidgetSetting) *MenuWidget {
+func NewMenuWidget(rect Rect, attrs WidgetAttributes, cb WidgetEventCB, items []string, settings WidgetSetting) *MenuWidget {
 	// If not specified, automatically set width and height based on menu items.
 	if rect.H == 0 {
 		rect.H = len(items)
@@ -37,10 +37,11 @@ func NewMenuWidget(rect Rect, fg, bg tb.Attribute, cb WidgetEventCB, items []str
 		}
 	}
 
+	InitWidgetAttributes(&attrs)
+
 	w := MenuWidget{
 		Rect:      rect,
-		Fg:        fg,
-		Bg:        bg,
+		Attrs:     attrs,
 		Cb:        cb,
 		Items:     items,
 		Settings:  settings,
@@ -51,11 +52,11 @@ func NewMenuWidget(rect Rect, fg, bg tb.Attribute, cb WidgetEventCB, items []str
 }
 
 func (w *MenuWidget) Draw() {
-	clearRect(w.Rect, w.Bg)
+	clearRect(w.Rect, w.Attrs.Bg)
 
 	if w.Settings&WidgetBox != 0 {
 		boxRect := Rect{w.Rect.X - 1, w.Rect.Y - 1, w.Rect.W + 2, w.Rect.H + 2}
-		drawBox(boxRect, w.Fg, w.Bg)
+		drawBox(boxRect, w.Attrs.Fg, w.Attrs.Bg)
 	}
 
 	starti := w.Scrollpos
@@ -70,15 +71,15 @@ func (w *MenuWidget) Draw() {
 		if w.Sel == i {
 			// Highlight selected menu item
 			if w.Settings&WidgetCenter != 0 {
-				printpaddedcenter(item, w.Rect.X, y, w.Bg, w.Fg, w.Rect.W)
+				printpaddedcenter(item, w.Rect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg, w.Rect.W)
 			} else {
-				printpadded(item, 1, w.Rect.W-len(item)-1, w.Rect.X, y, w.Bg, w.Fg)
+				printpadded(item, 1, w.Rect.W-len(item)-1, w.Rect.X, y, w.Attrs.Bg, w.Attrs.Fg)
 			}
 		} else {
 			if w.Settings&WidgetCenter != 0 {
-				printpaddedcenter(item, w.Rect.X, y, w.Fg, w.Bg, w.Rect.W)
+				printpaddedcenter(item, w.Rect.X, y, w.Attrs.Fg, w.Attrs.Bg, w.Rect.W)
 			} else {
-				printpadded(item, 1, w.Rect.W-len(item)-1, w.Rect.X, y, w.Fg, w.Bg)
+				printpadded(item, 1, w.Rect.W-len(item)-1, w.Rect.X, y, w.Attrs.Fg, w.Attrs.Bg)
 			}
 		}
 		y++

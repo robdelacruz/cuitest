@@ -6,7 +6,7 @@ import (
 
 type ListboxWidget struct {
 	Rect      Rect
-	Fg, Bg    tb.Attribute
+	Attrs     WidgetAttributes
 	Cb        WidgetEventCB
 	Items     []string
 	Settings  WidgetSetting
@@ -14,7 +14,7 @@ type ListboxWidget struct {
 	Scrollpos int
 }
 
-func NewListboxWidget(rect Rect, fg, bg tb.Attribute, cb WidgetEventCB, items []string, settings WidgetSetting) *ListboxWidget {
+func NewListboxWidget(rect Rect, attrs WidgetAttributes, cb WidgetEventCB, items []string, settings WidgetSetting) *ListboxWidget {
 	// If not specified, automatically set width and height based on listbox items.
 	if rect.H == 0 {
 		rect.H = len(items)
@@ -37,10 +37,11 @@ func NewListboxWidget(rect Rect, fg, bg tb.Attribute, cb WidgetEventCB, items []
 		}
 	}
 
+	InitWidgetAttributes(&attrs)
+
 	w := ListboxWidget{
 		Rect:      rect,
-		Fg:        fg,
-		Bg:        bg,
+		Attrs:     attrs,
 		Cb:        cb,
 		Items:     items,
 		Settings:  settings,
@@ -52,11 +53,11 @@ func NewListboxWidget(rect Rect, fg, bg tb.Attribute, cb WidgetEventCB, items []
 }
 
 func (w *ListboxWidget) Draw() {
-	clearRect(w.Rect, w.Bg)
+	clearRect(w.Rect, w.Attrs.Bg)
 
 	if w.Settings&WidgetBox != 0 {
 		boxRect := Rect{w.Rect.X - 1, w.Rect.Y - 1, w.Rect.W + 2, w.Rect.H + 2}
-		drawBox(boxRect, w.Fg, w.Bg)
+		drawBox(boxRect, w.Attrs.Fg, w.Attrs.Bg)
 	}
 
 	starti := w.Scrollpos
@@ -70,9 +71,9 @@ func (w *ListboxWidget) Draw() {
 		item := w.Items[i]
 		if w.Sel == i {
 			// Highlight selected item
-			printpadded(item, 1, w.Rect.W-len(item)-1, w.Rect.X, y, w.Bg, w.Fg)
+			printpadded(item, 1, w.Rect.W-len(item)-1, w.Rect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg)
 		} else {
-			printpadded(item, 1, w.Rect.W-len(item)-1, w.Rect.X, y, w.Fg, w.Bg)
+			printpadded(item, 1, w.Rect.W-len(item)-1, w.Rect.X, y, w.Attrs.Fg, w.Attrs.Bg)
 		}
 		y++
 	}

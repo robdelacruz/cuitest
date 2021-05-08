@@ -72,7 +72,15 @@ func NewMainWindow() *MainWindow {
 	w.smileyw.X = 5
 	w.smileyw.Y = 5
 
-	w.labelw = NewLabelWidget(Rect{5, 15, 0, 0}, tb.Attribute(156), tb.Attribute(17), "(label)", 0)
+	grey39 := tb.Attribute(242)
+	gold1 := tb.Attribute(221)
+
+	attrs := WidgetAttributes{
+		Fg: gold1,
+		Bg: grey39,
+	}
+
+	w.labelw = NewLabelWidget(Rect{5, 15, 0, 0}, attrs, "(label)", 0)
 
 	return &w
 }
@@ -115,8 +123,26 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 	if w.popupw != nil {
 		return w.popupw.HandleEvent(e)
 	}
-	fg := tb.Attribute(156)
-	bg := tb.Attribute(17)
+
+	black := tb.Attribute(17)
+	darkolivegreen := tb.Attribute(156)
+	darkorange := tb.Attribute(167)
+	grey39 := tb.Attribute(242)
+	plum1 := tb.Attribute(220)
+	//	gold1 := tb.Attribute(221)
+
+	attrs1 := WidgetAttributes{
+		Fg: darkolivegreen,
+		Bg: black,
+	}
+	attrs2 := WidgetAttributes{
+		Fg: darkorange,
+		Bg: black,
+	}
+	attrs3 := WidgetAttributes{
+		Fg: plum1,
+		Bg: grey39,
+	}
 
 	if e.Ch == 'm' {
 		items := []string{
@@ -131,7 +157,7 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 			"Option 9 123",
 			"Option 10",
 		}
-		w.popupw = NewMenuWidget(Rect{5, 0, 0, 0}, fg, bg, w.popupCB, items, WidgetBox|WidgetCenter)
+		w.popupw = NewMenuWidget(Rect{5, 0, 0, 0}, attrs1, w.popupCB, items, WidgetBox|WidgetCenter)
 		return true
 	} else if e.Ch == 'l' {
 		items := []string{
@@ -141,13 +167,14 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 			"of the party.",
 			"-- typing drill",
 		}
-		w.popupw = NewListboxWidget(Rect{10, 0, 0, 0}, fg, bg, w.popupCB, items, WidgetBox)
+		w.popupw = NewListboxWidget(Rect{10, 0, 0, 0}, attrs2, w.popupCB, items, WidgetBox)
 		return true
 	} else if e.Ch == 't' {
+		var cellAttrs WidgetAttributes
 		cols := []CellSetting{
-			CellSetting{0, 15, 0, 0},
-			CellSetting{15, 15, 0, 0},
-			CellSetting{25, 10, 0, 0},
+			CellSetting{0, 15, cellAttrs},
+			CellSetting{15, 15, cellAttrs},
+			CellSetting{25, 10, cellAttrs},
 		}
 		headings := []string{"col1", "col2", "col3"}
 		rows := []TableRow{
@@ -159,7 +186,7 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 			TableRow{"of the", "party.", ""},
 			TableRow{"12345", "678", "9012"},
 		}
-		w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, fg, bg, fg, bg, w.popupCB, cols, headings, rows, WidgetBox)
+		w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, attrs3, attrs2, w.popupCB, cols, headings, rows, WidgetBox)
 		return true
 	}
 

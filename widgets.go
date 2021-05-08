@@ -44,6 +44,26 @@ const (
 	WidgetBox
 )
 
+type WidgetAttributes struct {
+	Fg, Bg                   tb.Attribute
+	HighlightFg, HighlightBg tb.Attribute
+}
+
+func InitWidgetAttributes(attrs *WidgetAttributes) {
+	if attrs.Fg == 0 {
+		attrs.Fg = tb.ColorWhite
+	}
+	if attrs.Bg == 0 {
+		attrs.Bg = tb.ColorBlack
+	}
+	if attrs.HighlightFg == 0 {
+		attrs.HighlightFg = attrs.Bg
+	}
+	if attrs.HighlightBg == 0 {
+		attrs.HighlightBg = attrs.Fg
+	}
+}
+
 func print(s string, x, y int, fg, bg tb.Attribute) {
 	for _, c := range s {
 		tb.SetCell(x, y, c, fg, bg)
