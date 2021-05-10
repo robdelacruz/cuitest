@@ -80,7 +80,9 @@ func NewMainWindow() *MainWindow {
 		Bg: grey39,
 	}
 
-	w.labelw = NewLabelWidget(Rect{5, 15, 0, 0}, attrs, "(label)", 0)
+	lbltext := "Now is the time for all good men to come to the aid of the party.\n\nThe quick brown fox jumps over the lazy dog. Now is the time for all good men to come to the aid of the party. The quick brown fox jumps over the lazy dog. Now is the time for all good men to come to the aid of the party. The quick brown fox jumps over the lazy dog."
+
+	w.labelw = NewLabelWidget(Rect{1, 20, 30, 10}, attrs, lbltext, WidgetBox)
 
 	return &w
 }
@@ -90,16 +92,16 @@ func (w *MainWindow) popupCB(we *WidgetEvent) {
 		_, ok := w.popupw.(*MenuWidget)
 		if ok {
 			sel := we.P1
-			w.labelw.SetText(fmt.Sprintf("Selected menu option %d", sel))
+			w.labelw.SetText(fmt.Sprintf("Selected menu option:\n%d", sel))
 		}
 		_, ok = w.popupw.(*ListboxWidget)
 		if ok {
 			selstr := we.Pstr
-			w.labelw.SetText(fmt.Sprintf("Selected listbox item %s", selstr))
+			w.labelw.SetText(fmt.Sprintf("Selected listbox item:\n%s", selstr))
 		}
 		w.popupw = nil
 	} else if we.Code == WidgetEventEsc {
-		w.labelw.SetText("Canceled operation")
+		w.labelw.SetText("*** Canceled operation ***")
 		w.popupw = nil
 	} else if we.Code == WidgetEventSel {
 		w.labelw.SetText(we.Pstr)

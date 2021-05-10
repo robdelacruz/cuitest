@@ -16,13 +16,7 @@ func NewLabelWidget(rect Rect, attrs WidgetAttributes, text string, settings Wid
 		rect.H = 1
 	}
 	if rect.W == 0 {
-		// Add 1 char margin to the left and right of text.
-		rect.W = len(text) + 2
-	}
-
-	// Truncate label text that go beyond width.
-	if len(text)+2 > rect.W {
-		text = text[:rect.W-2]
+		rect.W = 10
 	}
 
 	InitWidgetAttributes(&attrs)
@@ -38,7 +32,8 @@ func NewLabelWidget(rect Rect, attrs WidgetAttributes, text string, settings Wid
 
 func (w *LabelWidget) Draw() {
 	clearRect(w.Rect, w.Attrs.Bg)
-	print(w.Text, w.Rect.X+1, w.Rect.Y, w.Attrs.Fg, w.Attrs.Bg)
+	//	print(w.Text, w.Rect.X+1, w.Rect.Y, w.Attrs.Fg, w.Attrs.Bg)
+	printRect(w.Text, w.Rect, w.Attrs.Fg, w.Attrs.Bg)
 }
 
 func (w *LabelWidget) HandleEvent(e tb.Event) bool {

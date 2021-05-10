@@ -2,6 +2,7 @@ package main
 
 import (
 	"strings"
+	"unicode"
 
 	tb "github.com/nsf/termbox-go"
 )
@@ -108,6 +109,58 @@ func printpaddedcenter(s string, x, y int, fg, bg tb.Attribute, w int) {
 	nleft := xcenter - x
 	nright := w - nleft - len(s)
 	printpadded(s, nleft, nright, x, y, fg, bg)
+}
+
+func printRect(s string, rect Rect, fg, bg tb.Attribute) {
+	ss := lexwords(s)
+
+	y := rect.Y
+	x := rect.X
+	for _, word := range ss {
+		if word == "\n" {
+			y++
+			x = rect.X
+			continue
+		}
+
+		// If word exceeds rect, go to next line.
+		if x+len(word)-1 > rect.X+rect.W-1 {
+			y++
+			x = rect.X
+		}
+
+		// Stop if no more rect space to write.
+		if y > rect.Y+rect.H-1 {
+			break
+		}
+
+		print(word, x, y, fg, bg)
+		x += len(word)
+	}
+}
+
+// "Here's a sentence." ==> ["Here's", " ", "a", " ", "sentence."]
+func lexwords(s string) []string {
+	ss := []string{}
+	var sb strings.Builder
+
+	for _, r := range s {
+		if unicode.IsSpace(r) {
+			if sb.Len() > 0 {
+				ss = append(ss, sb.String())
+				sb.Reset()
+			}
+			ss = append(ss, string(r))
+			continue
+		}
+
+		sb.WriteRune(r)
+	}
+
+	if sb.Len() > 0 {
+		ss = append(ss, sb.String())
+	}
+	return ss
 }
 
 func clearRect(rect Rect, bg tb.Attribute) {
