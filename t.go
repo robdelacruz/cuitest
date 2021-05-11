@@ -82,7 +82,7 @@ func NewMainWindow() *MainWindow {
 
 	lbltext := "Now is the time for all good men to come to the aid of the party.\n\nThe quick brown fox jumps over the lazy dog. Now is the time for all good men to come to the aid of the party. The quick brown fox jumps over the lazy dog. Now is the time for all good men to come to the aid of the party. The quick brown fox jumps over the lazy dog."
 
-	w.labelw = NewLabelWidget(Rect{1, 20, 30, 10}, attrs, lbltext, WidgetBox)
+	w.labelw = NewLabelWidget(Rect{1, 20, 30, 10}, MarginX, attrs, lbltext, WidgetBox)
 
 	return &w
 }
@@ -164,7 +164,8 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 			"Option 9 123",
 			"Option 10",
 		}
-		w.popupw = NewMenuWidget(Rect{5, 0, 0, 0}, attrs1, w.popupCB, items, WidgetBox|WidgetCenter)
+		//w.popupw = NewMenuWidget(Rect{5, 1, 0, 0}, Margin0, attrs1, w.popupCB, items, WidgetBox|WidgetCenter)
+		w.popupw = NewMenuWidget(Rect{5, 1, 31, 0}, MarginX, attrs1, w.popupCB, items, WidgetBox|WidgetCenter)
 		return true
 	} else if e.Ch == 'l' {
 		items := []string{
@@ -174,14 +175,14 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 			"of the party.",
 			"-- typing drill",
 		}
-		w.popupw = NewListboxWidget(Rect{10, 0, 0, 0}, attrs2, w.popupCB, items, WidgetBox)
+		w.popupw = NewListboxWidget(Rect{10, 1, 30, 0}, MarginX, attrs2, w.popupCB, items, WidgetBox)
 		return true
 	} else if e.Ch == 't' {
 		var cellAttrs WidgetAttributes
 		cols := []CellSetting{
 			CellSetting{0, 15, cellAttrs},
-			CellSetting{15, 15, cellAttrs},
-			CellSetting{25, 10, cellAttrs},
+			CellSetting{15, 10, cellAttrs},
+			CellSetting{35, 10, cellAttrs},
 		}
 		headings := []string{"col1", "col2", "col3"}
 		rows := []TableRow{
@@ -194,7 +195,7 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 			TableRow{"12345", "678", "9012"},
 		}
 		//w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, attrs3, attrs1, w.popupCB, cols, headings, rows, WidgetBox)
-		w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, attrs3, attrs1, w.popupCB, cols, headings, rows, WidgetBox)
+		w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, Margin1, attrs3, attrs1, w.popupCB, cols, headings, rows, WidgetCenter)
 		return true
 	}
 

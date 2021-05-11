@@ -12,6 +12,7 @@ type CellSetting struct {
 
 type TableWidget struct {
 	Rect         Rect
+	Margin       Margin
 	Attrs        WidgetAttributes
 	AttrsHeading WidgetAttributes
 	Cb           WidgetEventCB
@@ -23,10 +24,10 @@ type TableWidget struct {
 	Scrollpos    int
 }
 
-func NewTableWidget(rect Rect, attrs WidgetAttributes, attrsHeading WidgetAttributes, cb WidgetEventCB, cols []CellSetting, headings []string, rows []TableRow, settings WidgetSetting) *TableWidget {
+func NewTableWidget(rect Rect, margin Margin, attrs WidgetAttributes, attrsHeading WidgetAttributes, cb WidgetEventCB, cols []CellSetting, headings []string, rows []TableRow, settings WidgetSetting) *TableWidget {
 	// If not specified, automatically set width and height based on column settings.
 	if rect.H == 0 {
-		rect.H = len(rows)
+		rect.H = len(rows) + margin.T + margin.B
 		if len(headings) > 0 {
 			rect.H += 1
 		}
@@ -38,9 +39,7 @@ func NewTableWidget(rect Rect, attrs WidgetAttributes, attrsHeading WidgetAttrib
 				maxlen = col.X + col.W
 			}
 		}
-
-		// Add 1 char margin to the right.
-		rect.W = maxlen + 1
+		rect.W = maxlen + margin.L + margin.R
 	}
 
 	InitWidgetAttributes(&attrs)
@@ -53,6 +52,7 @@ func NewTableWidget(rect Rect, attrs WidgetAttributes, attrsHeading WidgetAttrib
 
 	w := TableWidget{
 		Rect:         rect,
+		Margin:       margin,
 		Attrs:        attrs,
 		AttrsHeading: attrsHeading,
 		Cb:           cb,
@@ -71,22 +71,24 @@ func (w *TableWidget) Draw() {
 	clearRect(w.Rect, w.Attrs.Bg)
 
 	if w.Settings&WidgetBox != 0 {
-		boxRect := Rect{w.Rect.X - 1, w.Rect.Y - 1, w.Rect.W + 2, w.Rect.H + 2}
+		boxRect := AddRectBox(w.Rect)
 		drawBox(boxRect, w.Attrs.Fg, w.Attrs.Bg)
 	}
 
+	contentRect := AddRectMargin(w.Rect, w.Margin)
+
 	starti := w.Scrollpos
-	endi := w.Scrollpos + w.Rect.H - 1
+	endi := w.Scrollpos + contentRect.H - 1
 
 	// Heading
-	y := w.Rect.Y
+	y := contentRect.Y
 	if len(w.Headings) > 0 {
 		for icol, heading := range w.Headings {
 			if icol > len(w.Cols)-1 {
 				continue
 			}
 			col := w.Cols[icol]
-			print(heading, w.Rect.X+col.X, y, w.AttrsHeading.Fg, w.AttrsHeading.Bg)
+			print(heading, contentRect.X+col.X, y, w.AttrsHeading.Fg, w.AttrsHeading.Bg)
 		}
 		y++
 		endi = endi - 1
@@ -99,7 +101,8 @@ func (w *TableWidget) Draw() {
 	// Rows
 	for irow := starti; irow <= endi; irow++ {
 		if w.Sel == irow {
-			printspaces(w.Rect.W, w.Rect.X, y, w.Attrs.Bg, w.Attrs.Fg)
+			// Highlight selected row.
+			printspaces(w.Rect.W, w.Rect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg)
 		}
 
 		row := w.Rows[irow]
@@ -117,10 +120,10 @@ func (w *TableWidget) Draw() {
 				bg = col.Attrs.Bg
 			}
 			if w.Sel == irow {
-				// Highlight selected row
-				print(cell, w.Rect.X+col.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg)
+				// Use highlight color for cell when in selected row.
+				printw(cell, contentRect.X+col.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg, col.W)
 			} else {
-				print(cell, w.Rect.X+col.X, y, fg, bg)
+				printw(cell, contentRect.X+col.X, y, fg, bg, col.W)
 			}
 		}
 		y++
@@ -174,8 +177,9 @@ func (w *TableWidget) HandleEvent(e tb.Event) bool {
 }
 
 func (w *TableWidget) AdjustScroll() {
+	rect := AddRectMargin(w.Rect, w.Margin)
 	starti := w.Scrollpos
-	endi := w.Scrollpos + w.Rect.H - 1
+	endi := w.Scrollpos + rect.H - 1
 
 	if len(w.Headings) > 0 {
 		endi = endi - 1

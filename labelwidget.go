@@ -6,12 +6,13 @@ import (
 
 type LabelWidget struct {
 	Rect     Rect
+	Margin   Margin
 	Attrs    WidgetAttributes
 	Text     string
 	Settings WidgetSetting
 }
 
-func NewLabelWidget(rect Rect, attrs WidgetAttributes, text string, settings WidgetSetting) *LabelWidget {
+func NewLabelWidget(rect Rect, margin Margin, attrs WidgetAttributes, text string, settings WidgetSetting) *LabelWidget {
 	if rect.H == 0 {
 		rect.H = 1
 	}
@@ -23,6 +24,7 @@ func NewLabelWidget(rect Rect, attrs WidgetAttributes, text string, settings Wid
 
 	w := LabelWidget{
 		Rect:     rect,
+		Margin:   margin,
 		Attrs:    attrs,
 		Text:     text,
 		Settings: settings,
@@ -32,8 +34,14 @@ func NewLabelWidget(rect Rect, attrs WidgetAttributes, text string, settings Wid
 
 func (w *LabelWidget) Draw() {
 	clearRect(w.Rect, w.Attrs.Bg)
-	//	print(w.Text, w.Rect.X+1, w.Rect.Y, w.Attrs.Fg, w.Attrs.Bg)
-	printRect(w.Text, w.Rect, w.Attrs.Fg, w.Attrs.Bg)
+
+	if w.Settings&WidgetBox != 0 {
+		boxRect := AddRectBox(w.Rect)
+		drawBox(boxRect, w.Attrs.Fg, w.Attrs.Bg)
+	}
+
+	rect := AddRectMargin(w.Rect, w.Margin)
+	printRect(w.Text, rect, w.Attrs.Fg, w.Attrs.Bg)
 }
 
 func (w *LabelWidget) HandleEvent(e tb.Event) bool {

@@ -6,6 +6,7 @@ import (
 
 type ListboxWidget struct {
 	Rect      Rect
+	Margin    Margin
 	Attrs     WidgetAttributes
 	Cb        WidgetEventCB
 	Items     []string
@@ -14,10 +15,10 @@ type ListboxWidget struct {
 	Scrollpos int
 }
 
-func NewListboxWidget(rect Rect, attrs WidgetAttributes, cb WidgetEventCB, items []string, settings WidgetSetting) *ListboxWidget {
+func NewListboxWidget(rect Rect, margin Margin, attrs WidgetAttributes, cb WidgetEventCB, items []string, settings WidgetSetting) *ListboxWidget {
 	// If not specified, automatically set width and height based on listbox items.
 	if rect.H == 0 {
-		rect.H = len(items)
+		rect.H = len(items) + margin.T + margin.B
 	}
 	if rect.W == 0 {
 		maxlen := 0
@@ -26,14 +27,13 @@ func NewListboxWidget(rect Rect, attrs WidgetAttributes, cb WidgetEventCB, items
 				maxlen = len(item)
 			}
 		}
-		// Add 1 char margin to the left and right of item.
-		rect.W = maxlen + 2
+		rect.W = maxlen + margin.L + margin.R
 	}
 
 	// Truncate listbox item text that go beyond width.
 	for i, item := range items {
-		if len(item)+2 > rect.W {
-			items[i] = item[:rect.W-2]
+		if len(item) > rect.W-margin.L-margin.R {
+			items[i] = item[:rect.W-margin.L-margin.R]
 		}
 	}
 
@@ -41,6 +41,7 @@ func NewListboxWidget(rect Rect, attrs WidgetAttributes, cb WidgetEventCB, items
 
 	w := ListboxWidget{
 		Rect:      rect,
+		Margin:    margin,
 		Attrs:     attrs,
 		Cb:        cb,
 		Items:     items,
@@ -56,24 +57,27 @@ func (w *ListboxWidget) Draw() {
 	clearRect(w.Rect, w.Attrs.Bg)
 
 	if w.Settings&WidgetBox != 0 {
-		boxRect := Rect{w.Rect.X - 1, w.Rect.Y - 1, w.Rect.W + 2, w.Rect.H + 2}
+		boxRect := AddRectBox(w.Rect)
 		drawBox(boxRect, w.Attrs.Fg, w.Attrs.Bg)
 	}
 
+	contentRect := AddRectMargin(w.Rect, w.Margin)
+
 	starti := w.Scrollpos
-	endi := w.Scrollpos + w.Rect.H - 1
+	endi := w.Scrollpos + contentRect.H - 1
 	if endi > len(w.Items)-1 {
 		endi = len(w.Items) - 1
 	}
 
-	y := w.Rect.Y
+	y := contentRect.Y
 	for i := starti; i <= endi; i++ {
 		item := w.Items[i]
 		if w.Sel == i {
-			// Highlight selected item
-			printpadded(item, 1, w.Rect.W-len(item)-1, w.Rect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg)
+			// Highlight selected item.
+			printspaces(w.Rect.W, w.Rect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg)
+			printw(item, contentRect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg, contentRect.W)
 		} else {
-			printpadded(item, 1, w.Rect.W-len(item)-1, w.Rect.X, y, w.Attrs.Fg, w.Attrs.Bg)
+			printw(item, contentRect.X, y, w.Attrs.Fg, w.Attrs.Bg, contentRect.W)
 		}
 		y++
 	}
@@ -127,8 +131,9 @@ func (w *ListboxWidget) HandleEvent(e tb.Event) bool {
 }
 
 func (w *ListboxWidget) AdjustScroll() {
+	rect := AddRectMargin(w.Rect, w.Margin)
 	starti := w.Scrollpos
-	endi := w.Scrollpos + w.Rect.H - 1
+	endi := w.Scrollpos + rect.H - 1
 
 	if w.Sel < starti {
 		w.Scrollpos -= starti - w.Sel

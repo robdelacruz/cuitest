@@ -13,6 +13,14 @@ type Pos struct {
 type Rect struct {
 	X, Y, W, H int
 }
+type Margin struct {
+	T, B, L, R int
+}
+
+var Margin0 = Margin{0, 0, 0, 0}
+var Margin1 = Margin{1, 1, 1, 1}
+var MarginX = Margin{0, 0, 1, 1}
+var MarginY = Margin{1, 1, 0, 0}
 
 type Widget interface {
 	Draw()
@@ -65,11 +73,11 @@ func InitWidgetAttributes(attrs *WidgetAttributes) {
 	}
 }
 
-func print(s string, x, y int, fg, bg tb.Attribute) {
-	for _, c := range s {
-		tb.SetCell(x, y, c, fg, bg)
-		x++
-	}
+func AddRectMargin(rect Rect, m Margin) Rect {
+	return Rect{rect.X + m.L, rect.Y + m.T, rect.W - m.L - m.R, rect.H - m.T - m.B}
+}
+func AddRectBox(rect Rect) Rect {
+	return Rect{rect.X - 1, rect.Y - 1, rect.W + 2, rect.H + 2}
 }
 
 func print0(s string, x, y int) {
@@ -79,11 +87,18 @@ func print0(s string, x, y int) {
 	}
 }
 
-func printcenter(s string, x, y int, fg, bg tb.Attribute, w int) {
-	if w > len(s) {
-		x += w/2 - len(s)/2
-	}
+func print(s string, x, y int, fg, bg tb.Attribute) {
 	for _, c := range s {
+		tb.SetCell(x, y, c, fg, bg)
+		x++
+	}
+}
+
+func printw(s string, x, y int, fg, bg tb.Attribute, w int) {
+	for i, c := range s {
+		if i > w-1 {
+			return
+		}
 		tb.SetCell(x, y, c, fg, bg)
 		x++
 	}
@@ -101,14 +116,14 @@ func printpadded(s string, nleftspace, nrightspace int, x, y int, fg, bg tb.Attr
 	print(strings.Repeat(" ", nrightspace), x+nleftspace+len(s), y, fg, bg)
 }
 
-func printpaddedcenter(s string, x, y int, fg, bg tb.Attribute, w int) {
-	xcenter := x
+func printcenter(s string, x, y int, fg, bg tb.Attribute, w int) {
 	if w > len(s) {
-		xcenter += w/2 - len(s)/2
+		x += w/2 - len(s)/2
 	}
-	nleft := xcenter - x
-	nright := w - nleft - len(s)
-	printpadded(s, nleft, nright, x, y, fg, bg)
+	for _, c := range s {
+		tb.SetCell(x, y, c, fg, bg)
+		x++
+	}
 }
 
 func printRect(s string, rect Rect, fg, bg tb.Attribute) {
