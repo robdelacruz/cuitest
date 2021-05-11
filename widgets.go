@@ -134,6 +134,11 @@ func printRect(s string, rect Rect, fg, bg tb.Attribute) {
 			break
 		}
 
+		// Skip over any whitespace at the start of the line (except for the first row).
+		if len(word) == 1 && unicode.IsSpace([]rune(word)[0]) && x == rect.X && y > rect.Y {
+			continue
+		}
+
 		print(word, x, y, fg, bg)
 		x += len(word)
 	}
