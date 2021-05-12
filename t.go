@@ -150,6 +150,10 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 		Fg: plum1,
 		Bg: grey39,
 	}
+	attrs4 := WidgetAttributes{
+		Fg: darkolivegreen,
+		Bg: grey39,
+	}
 
 	if e.Ch == 'm' {
 		items := []string{
@@ -196,6 +200,9 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 		}
 		//w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, attrs3, attrs1, w.popupCB, cols, headings, rows, WidgetBox)
 		w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, Margin1, attrs3, attrs1, w.popupCB, cols, headings, rows, WidgetCenter)
+		return true
+	} else if e.Ch == 'e' {
+		w.popupw = NewEntryWidget(Rect{5, 5, 30, 1}, Margin0, attrs4, w.popupCB, "Entry Text", WidgetBox)
 		return true
 	}
 
