@@ -1,0 +1,52 @@
+Db:
+
+Bank Account (Account + Trans)
+------------
+Date
+Check#
+Desc
+Amt (+deposit or -withdraw)
+
+Stock (Account + Trans)
+-----
+Date
+Desc
+Amt (+buy or -sell)
+
+
+AccountType
+-----------
+accounttype_id
+name TEXT
+
+
+Currency
+--------
+currency_id
+name TEXT
+usdrate REAL
+
+
+Account
+-------
+account_id
+code TEXT
+name TEXT
+accounttype_id INTEGER
+currency_id
+
+
+Trans
+-----
+trans_id
+account_id
+date TEXT
+ref TEXT
+desc TEXT
+amt REAL
+
+
+Account 1:n Trans
+Account 1:1 AccountType
+Account 1:1 Currency
+
