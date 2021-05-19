@@ -156,28 +156,28 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 	}
 
 	if e.Ch == 'm' {
-		items := []string{
-			"Menu Option 1 abc",
-			"Option 2 def",
-			"Option 3 ghijkl",
-			"Option 4 some more text",
-			"Option 5 xyz",
-			"Option 6 lmnop",
-			"Option 7 qrstuvw",
-			"Option 8 12345",
-			"Option 9 123",
-			"Option 10",
+		items := []*WidgetItem{
+			&WidgetItem{1, "option1", "Menu Option 1 abc"},
+			&WidgetItem{2, "option2", "Option 2 def"},
+			&WidgetItem{3, "option3", "Option 3 ghijkl"},
+			&WidgetItem{4, "option4", "Option 4 some more text"},
+			&WidgetItem{5, "option5", "Option 5 xyz"},
+			&WidgetItem{6, "option6", "Option 6 lmnop"},
+			&WidgetItem{7, "option7", "Option 7 qrstuvw"},
+			&WidgetItem{8, "option8", "Option 8 12345"},
+			&WidgetItem{9, "option9", "Option 9 123"},
+			&WidgetItem{10, "option10", "Option 10"},
 		}
 		//w.popupw = NewMenuWidget(Rect{5, 1, 0, 0}, Margin0, attrs1, w.popupCB, items, WidgetBox|WidgetCenter)
 		w.popupw = NewMenuWidget(Rect{5, 1, 31, 0}, MarginX, attrs1, w.popupCB, items, WidgetBox|WidgetCenter)
 		return true
 	} else if e.Ch == 'l' {
-		items := []string{
-			"Now is the time",
-			"for all good men",
-			"to come to the aid",
-			"of the party.",
-			"-- typing drill",
+		items := []*WidgetItem{
+			&WidgetItem{1, "line1", "Now is the time"},
+			&WidgetItem{2, "line2", "for all good men"},
+			&WidgetItem{3, "line3", "to come to the aid"},
+			&WidgetItem{4, "line4", "of the party."},
+			&WidgetItem{5, "line5", "-- typing drill"},
 		}
 		w.popupw = NewListboxWidget(Rect{10, 1, 30, 0}, MarginX, attrs2, w.popupCB, items, WidgetBox)
 		return true

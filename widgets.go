@@ -58,6 +58,12 @@ type WidgetAttributes struct {
 	HighlightFg, HighlightBg tb.Attribute
 }
 
+type WidgetItem struct {
+	Id      int
+	Sid     string
+	Display string
+}
+
 func InitWidgetAttributes(attrs *WidgetAttributes) {
 	if attrs.Fg == 0 {
 		attrs.Fg = tb.ColorWhite

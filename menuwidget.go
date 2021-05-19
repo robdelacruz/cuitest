@@ -9,13 +9,13 @@ type MenuWidget struct {
 	Margin    Margin
 	Attrs     WidgetAttributes
 	Cb        WidgetEventCB
-	Items     []string
+	Items     []*WidgetItem
 	Settings  WidgetSetting
 	Sel       int
 	Scrollpos int
 }
 
-func NewMenuWidget(rect Rect, margin Margin, attrs WidgetAttributes, cb WidgetEventCB, items []string, settings WidgetSetting) *MenuWidget {
+func NewMenuWidget(rect Rect, margin Margin, attrs WidgetAttributes, cb WidgetEventCB, items []*WidgetItem, settings WidgetSetting) *MenuWidget {
 	// If not specified, automatically set width and height based on menu items.
 	if rect.H == 0 {
 		rect.H = len(items) + margin.T + margin.B
@@ -23,8 +23,8 @@ func NewMenuWidget(rect Rect, margin Margin, attrs WidgetAttributes, cb WidgetEv
 	if rect.W == 0 {
 		maxlen := 0
 		for _, item := range items {
-			if len(item) > maxlen {
-				maxlen = len(item)
+			if len(item.Display) > maxlen {
+				maxlen = len(item.Display)
 			}
 		}
 		rect.W = maxlen + margin.L + margin.R
@@ -32,8 +32,8 @@ func NewMenuWidget(rect Rect, margin Margin, attrs WidgetAttributes, cb WidgetEv
 
 	// Truncate menu item text that go beyond width.
 	for i, item := range items {
-		if len(item) > rect.W-margin.L-margin.R {
-			items[i] = item[:rect.W-margin.L-margin.R]
+		if len(item.Display) > rect.W-margin.L-margin.R {
+			items[i].Display = item.Display[:rect.W-margin.L-margin.R]
 		}
 	}
 
@@ -75,16 +75,16 @@ func (w *MenuWidget) Draw() {
 			// Highlight selected menu item
 			printspaces(w.Rect.W, w.Rect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg)
 			if w.Settings&WidgetCenter != 0 {
-				printcenter(item, contentRect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg, contentRect.W)
-				printcenter(item, w.Rect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg, w.Rect.W)
+				printcenter(item.Display, contentRect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg, contentRect.W)
+				printcenter(item.Display, w.Rect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg, w.Rect.W)
 			} else {
-				printw(item, contentRect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg, contentRect.W)
+				printw(item.Display, contentRect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg, contentRect.W)
 			}
 		} else {
 			if w.Settings&WidgetCenter != 0 {
-				printcenter(item, contentRect.X, y, w.Attrs.Fg, w.Attrs.Bg, contentRect.W)
+				printcenter(item.Display, contentRect.X, y, w.Attrs.Fg, w.Attrs.Bg, contentRect.W)
 			} else {
-				printw(item, contentRect.X, y, w.Attrs.Fg, w.Attrs.Bg, contentRect.W)
+				printw(item.Display, contentRect.X, y, w.Attrs.Fg, w.Attrs.Bg, contentRect.W)
 			}
 		}
 		y++

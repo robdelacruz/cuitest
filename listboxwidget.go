@@ -9,13 +9,13 @@ type ListboxWidget struct {
 	Margin    Margin
 	Attrs     WidgetAttributes
 	Cb        WidgetEventCB
-	Items     []string
+	Items     []*WidgetItem
 	Settings  WidgetSetting
 	Sel       int
 	Scrollpos int
 }
 
-func NewListboxWidget(rect Rect, margin Margin, attrs WidgetAttributes, cb WidgetEventCB, items []string, settings WidgetSetting) *ListboxWidget {
+func NewListboxWidget(rect Rect, margin Margin, attrs WidgetAttributes, cb WidgetEventCB, items []*WidgetItem, settings WidgetSetting) *ListboxWidget {
 	// If not specified, automatically set width and height based on listbox items.
 	if rect.H == 0 {
 		rect.H = len(items) + margin.T + margin.B
@@ -23,8 +23,8 @@ func NewListboxWidget(rect Rect, margin Margin, attrs WidgetAttributes, cb Widge
 	if rect.W == 0 {
 		maxlen := 0
 		for _, item := range items {
-			if len(item) > maxlen {
-				maxlen = len(item)
+			if len(item.Display) > maxlen {
+				maxlen = len(item.Display)
 			}
 		}
 		rect.W = maxlen + margin.L + margin.R
@@ -32,8 +32,8 @@ func NewListboxWidget(rect Rect, margin Margin, attrs WidgetAttributes, cb Widge
 
 	// Truncate listbox item text that go beyond width.
 	for i, item := range items {
-		if len(item) > rect.W-margin.L-margin.R {
-			items[i] = item[:rect.W-margin.L-margin.R]
+		if len(item.Display) > rect.W-margin.L-margin.R {
+			items[i].Display = item.Display[:rect.W-margin.L-margin.R]
 		}
 	}
 
@@ -75,9 +75,9 @@ func (w *ListboxWidget) Draw() {
 		if w.Sel == i {
 			// Highlight selected item.
 			printspaces(w.Rect.W, w.Rect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg)
-			printw(item, contentRect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg, contentRect.W)
+			printw(item.Display, contentRect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg, contentRect.W)
 		} else {
-			printw(item, contentRect.X, y, w.Attrs.Fg, w.Attrs.Bg, contentRect.W)
+			printw(item.Display, contentRect.X, y, w.Attrs.Fg, w.Attrs.Bg, contentRect.W)
 		}
 		y++
 	}
@@ -112,8 +112,9 @@ func (w *ListboxWidget) HandleEvent(e tb.Event) bool {
 		if w.Cb != nil {
 			we := WidgetEvent{
 				Code: WidgetEventEnter,
-				P1:   w.Sel,
-				Pstr: w.Items[w.Sel],
+				P1:   w.Items[w.Sel].Id,
+				P2:   w.Sel,
+				Pstr: w.Items[w.Sel].Sid,
 			}
 			w.Cb(&we)
 		}
@@ -148,9 +149,9 @@ func (w *ListboxWidget) AdjustScroll() {
 	}
 }
 
-func (w *ListboxWidget) SelItem() (int, string) {
+func (w *ListboxWidget) SelItem() (int, *WidgetItem) {
 	if len(w.Items) == 0 {
-		return -1, ""
+		return -1, nil
 	}
 	return w.Sel, w.Items[w.Sel]
 }
@@ -163,8 +164,9 @@ func (w *ListboxWidget) PostSelItemEvent() {
 	if w.Cb != nil {
 		we := WidgetEvent{
 			Code: WidgetEventSel,
-			P1:   w.Sel,
-			Pstr: w.Items[w.Sel],
+			P1:   w.Items[w.Sel].Id,
+			P2:   w.Sel,
+			Pstr: w.Items[w.Sel].Sid,
 		}
 		w.Cb(&we)
 	}
