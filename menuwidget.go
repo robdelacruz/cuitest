@@ -119,6 +119,7 @@ func (w *MenuWidget) HandleEvent(e tb.Event) bool {
 			we := WidgetEvent{
 				Code: WidgetEventEnter,
 				P1:   w.Sel,
+				Item: w.Items[w.Sel],
 			}
 			w.Cb(&we)
 		}

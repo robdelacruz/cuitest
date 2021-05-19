@@ -37,6 +37,7 @@ const (
 
 type WidgetEvent struct {
 	Code   WidgetEventCode
+	Item   *WidgetItem
 	P1     int
 	P2     int
 	Pnum   float32

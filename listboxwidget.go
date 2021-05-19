@@ -112,9 +112,8 @@ func (w *ListboxWidget) HandleEvent(e tb.Event) bool {
 		if w.Cb != nil {
 			we := WidgetEvent{
 				Code: WidgetEventEnter,
-				P1:   w.Items[w.Sel].Id,
-				P2:   w.Sel,
-				Pstr: w.Items[w.Sel].Sid,
+				P1:   w.Sel,
+				Item: w.Items[w.Sel],
 			}
 			w.Cb(&we)
 		}
@@ -164,9 +163,8 @@ func (w *ListboxWidget) PostSelItemEvent() {
 	if w.Cb != nil {
 		we := WidgetEvent{
 			Code: WidgetEventSel,
-			P1:   w.Items[w.Sel].Id,
-			P2:   w.Sel,
-			Pstr: w.Items[w.Sel].Sid,
+			P1:   w.Sel,
+			Item: w.Items[w.Sel],
 		}
 		w.Cb(&we)
 	}

@@ -92,19 +92,21 @@ func (w *MainWindow) popupCB(we *WidgetEvent) {
 		_, ok := w.popupw.(*MenuWidget)
 		if ok {
 			sel := we.P1
-			w.labelw.SetText(fmt.Sprintf("Selected menu option:\n%d", sel))
+			item := we.Item
+			w.labelw.SetText(fmt.Sprintf("Selected menu option %d: %s\n", sel, item.Display))
 		}
 		_, ok = w.popupw.(*ListboxWidget)
 		if ok {
-			selstr := we.Pstr
-			w.labelw.SetText(fmt.Sprintf("Selected listbox item:\n%s", selstr))
+			w.labelw.SetText(fmt.Sprintf("Selected listbox item:\n%s", we.Item.Display))
 		}
 		w.popupw = nil
 	} else if we.Code == WidgetEventEsc {
 		w.labelw.SetText("*** Canceled operation ***")
 		w.popupw = nil
 	} else if we.Code == WidgetEventSel {
-		w.labelw.SetText(we.Pstr)
+		if we.Item != nil {
+			w.labelw.SetText(fmt.Sprintf("[%s]: %s", we.Item.Sid, we.Item.Display))
+		}
 	}
 }
 
