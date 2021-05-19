@@ -75,14 +75,14 @@ func NewMainWindow() *MainWindow {
 	grey39 := tb.Attribute(242)
 	gold1 := tb.Attribute(221)
 
-	attrs := WidgetAttributes{
+	color := Color{
 		Fg: gold1,
 		Bg: grey39,
 	}
 
 	lbltext := "Now is the time for all good men to come to the aid of the party.\n\nThe quick brown fox jumps over the lazy dog. Now is the time for all good men to come to the aid of the party. The quick brown fox jumps over the lazy dog. Now is the time for all good men to come to the aid of the party. The quick brown fox jumps over the lazy dog."
 
-	w.labelw = NewLabelWidget(Rect{1, 20, 30, 10}, MarginX, attrs, lbltext, WidgetBox)
+	w.labelw = NewLabelWidget(Rect{1, 20, 30, 10}, MarginX, color, lbltext, FmtBox)
 
 	return &w
 }
@@ -134,23 +134,23 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 	plum1 := tb.Attribute(220)
 	gold1 := tb.Attribute(221)
 
-	attrs1 := WidgetAttributes{
+	color1 := Color{
 		Fg:          darkolivegreen,
 		Bg:          black,
 		HighlightFg: grey39,
 		HighlightBg: white,
 	}
-	attrs2 := WidgetAttributes{
+	color2 := Color{
 		Fg:          darkorange,
 		Bg:          black,
 		HighlightFg: gold1,
 		HighlightBg: grey39,
 	}
-	attrs3 := WidgetAttributes{
+	color3 := Color{
 		Fg: plum1,
 		Bg: grey39,
 	}
-	attrs4 := WidgetAttributes{
+	color4 := Color{
 		Fg: darkolivegreen,
 		Bg: grey39,
 	}
@@ -168,8 +168,8 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 			&WidgetItem{9, "option9", "Option 9 123"},
 			&WidgetItem{10, "option10", "Option 10"},
 		}
-		//w.popupw = NewMenuWidget(Rect{5, 1, 0, 0}, Margin0, attrs1, w.popupCB, items, WidgetBox|WidgetCenter)
-		w.popupw = NewMenuWidget(Rect{5, 1, 31, 0}, MarginX, attrs1, w.popupCB, items, WidgetBox|WidgetCenter)
+		//w.popupw = NewMenuWidget(Rect{5, 1, 0, 0}, Margin0, color1, w.popupCB, items, FmtBox|FmtCenter)
+		w.popupw = NewMenuWidget(Rect{5, 1, 31, 0}, MarginX, color1, w.popupCB, items, FmtBox|FmtCenter)
 		return true
 	} else if e.Ch == 'l' {
 		items := []*WidgetItem{
@@ -179,14 +179,14 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 			&WidgetItem{4, "line4", "of the party."},
 			&WidgetItem{5, "line5", "-- typing drill"},
 		}
-		w.popupw = NewListboxWidget(Rect{10, 1, 30, 0}, MarginX, attrs2, w.popupCB, items, WidgetBox)
+		w.popupw = NewListboxWidget(Rect{10, 1, 30, 0}, MarginX, color2, w.popupCB, items, FmtBox)
 		return true
 	} else if e.Ch == 't' {
-		var cellAttrs WidgetAttributes
+		var cellColor Color
 		cols := []CellSetting{
-			CellSetting{0, 15, cellAttrs},
-			CellSetting{15, 10, cellAttrs},
-			CellSetting{35, 10, cellAttrs},
+			CellSetting{0, 15, cellColor},
+			CellSetting{15, 10, cellColor},
+			CellSetting{35, 10, cellColor},
 		}
 		headings := []string{"col1", "col2", "col3"}
 		rows := []TableRow{
@@ -198,11 +198,11 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 			TableRow{"of the", "party.", ""},
 			TableRow{"12345", "678", "9012"},
 		}
-		//w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, attrs3, attrs1, w.popupCB, cols, headings, rows, WidgetBox)
-		w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, Margin1, attrs3, attrs1, w.popupCB, cols, headings, rows, WidgetCenter)
+		//w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, color3, color1, w.popupCB, cols, headings, rows, FmtBox)
+		w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, Margin1, color3, color1, w.popupCB, cols, headings, rows, FmtCenter)
 		return true
 	} else if e.Ch == 'e' {
-		w.popupw = NewEntryWidget(Rect{5, 5, 30, 1}, Margin0, attrs4, w.popupCB, "Entry Text", WidgetBox)
+		w.popupw = NewEntryWidget(Rect{5, 5, 30, 1}, Margin0, color4, w.popupCB, "Entry Text", FmtBox)
 		return true
 	}
 

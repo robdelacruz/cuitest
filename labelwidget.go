@@ -7,12 +7,12 @@ import (
 type LabelWidget struct {
 	Rect     Rect
 	Margin   Margin
-	Attrs    WidgetAttributes
+	Color    Color
 	Text     string
 	Settings WidgetSetting
 }
 
-func NewLabelWidget(rect Rect, margin Margin, attrs WidgetAttributes, text string, settings WidgetSetting) *LabelWidget {
+func NewLabelWidget(rect Rect, margin Margin, color Color, text string, settings WidgetSetting) *LabelWidget {
 	if rect.H == 0 {
 		rect.H = 1
 	}
@@ -20,12 +20,12 @@ func NewLabelWidget(rect Rect, margin Margin, attrs WidgetAttributes, text strin
 		rect.W = 10
 	}
 
-	InitWidgetAttributes(&attrs)
+	InitColor(&color)
 
 	w := LabelWidget{
 		Rect:     rect,
 		Margin:   margin,
-		Attrs:    attrs,
+		Color:    color,
 		Text:     text,
 		Settings: settings,
 	}
@@ -33,15 +33,15 @@ func NewLabelWidget(rect Rect, margin Margin, attrs WidgetAttributes, text strin
 }
 
 func (w *LabelWidget) Draw() {
-	clearRect(w.Rect, w.Attrs.Bg)
+	clearRect(w.Rect, w.Color.Bg)
 
-	if w.Settings&WidgetBox != 0 {
+	if w.Settings&FmtBox != 0 {
 		boxRect := AddRectBox(w.Rect)
-		drawBox(boxRect, w.Attrs.Fg, w.Attrs.Bg)
+		drawBox(boxRect, w.Color.Fg, w.Color.Bg)
 	}
 
 	rect := AddRectMargin(w.Rect, w.Margin)
-	printRect(w.Text, rect, w.Attrs.Fg, w.Attrs.Bg)
+	printRect(w.Text, rect, w.Color.Fg, w.Color.Bg)
 }
 
 func (w *LabelWidget) HandleEvent(e tb.Event) bool {

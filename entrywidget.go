@@ -7,14 +7,14 @@ import (
 type EntryWidget struct {
 	Rect     Rect
 	Margin   Margin
-	Attrs    WidgetAttributes
+	Color    Color
 	Cb       WidgetEventCB
 	Text     string
 	Settings WidgetSetting
 	Cur      Pos
 }
 
-func NewEntryWidget(rect Rect, margin Margin, attrs WidgetAttributes, cb WidgetEventCB, text string, settings WidgetSetting) *EntryWidget {
+func NewEntryWidget(rect Rect, margin Margin, color Color, cb WidgetEventCB, text string, settings WidgetSetting) *EntryWidget {
 	if rect.H == 0 {
 		rect.H = 1
 	}
@@ -22,12 +22,12 @@ func NewEntryWidget(rect Rect, margin Margin, attrs WidgetAttributes, cb WidgetE
 		rect.W = 10
 	}
 
-	InitWidgetAttributes(&attrs)
+	InitColor(&color)
 
 	w := EntryWidget{
 		Rect:     rect,
 		Margin:   margin,
-		Attrs:    attrs,
+		Color:    color,
 		Cb:       cb,
 		Text:     text,
 		Settings: settings,
@@ -37,22 +37,22 @@ func NewEntryWidget(rect Rect, margin Margin, attrs WidgetAttributes, cb WidgetE
 }
 
 func (w *EntryWidget) Draw() {
-	clearRect(w.Rect, w.Attrs.Bg)
+	clearRect(w.Rect, w.Color.Bg)
 
-	if w.Settings&WidgetBox != 0 {
+	if w.Settings&FmtBox != 0 {
 		boxRect := AddRectBox(w.Rect)
-		drawBox(boxRect, w.Attrs.Fg, w.Attrs.Bg)
+		drawBox(boxRect, w.Color.Fg, w.Color.Bg)
 	}
 
 	rect := AddRectMargin(w.Rect, w.Margin)
-	printw(w.Text, rect.X, rect.Y, w.Attrs.Fg, w.Attrs.Bg, rect.W)
+	printw(w.Text, rect.X, rect.Y, w.Color.Fg, w.Color.Bg, rect.W)
 
 	// Print cursor
 	curCh := ' '
 	if w.Cur.X <= len(w.Text)-1 {
 		curCh = rune(w.Text[w.Cur.X])
 	}
-	tb.SetCell(rect.X+w.Cur.X, rect.Y, curCh, w.Attrs.HighlightFg, w.Attrs.HighlightBg)
+	tb.SetCell(rect.X+w.Cur.X, rect.Y, curCh, w.Color.HighlightFg, w.Color.HighlightBg)
 }
 
 func (w *EntryWidget) HandleEvent(e tb.Event) bool {

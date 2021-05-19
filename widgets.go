@@ -48,12 +48,12 @@ type WidgetEventCB func(we *WidgetEvent)
 type WidgetSetting uint64
 
 const (
-	WidgetNormal WidgetSetting = 1 << iota
-	WidgetCenter
-	WidgetBox
+	FmtNormal WidgetSetting = 1 << iota
+	FmtCenter
+	FmtBox
 )
 
-type WidgetAttributes struct {
+type Color struct {
 	Fg, Bg                   tb.Attribute
 	HighlightFg, HighlightBg tb.Attribute
 }
@@ -64,18 +64,18 @@ type WidgetItem struct {
 	Display string
 }
 
-func InitWidgetAttributes(attrs *WidgetAttributes) {
-	if attrs.Fg == 0 {
-		attrs.Fg = tb.ColorWhite
+func InitColor(color *Color) {
+	if color.Fg == 0 {
+		color.Fg = tb.ColorWhite
 	}
-	if attrs.Bg == 0 {
-		attrs.Bg = tb.ColorBlack
+	if color.Bg == 0 {
+		color.Bg = tb.ColorBlack
 	}
-	if attrs.HighlightFg == 0 {
-		attrs.HighlightFg = attrs.Bg
+	if color.HighlightFg == 0 {
+		color.HighlightFg = color.Bg
 	}
-	if attrs.HighlightBg == 0 {
-		attrs.HighlightBg = attrs.Fg
+	if color.HighlightBg == 0 {
+		color.HighlightBg = color.Fg
 	}
 }
 

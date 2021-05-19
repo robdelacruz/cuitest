@@ -7,7 +7,7 @@ import (
 type ListboxWidget struct {
 	Rect      Rect
 	Margin    Margin
-	Attrs     WidgetAttributes
+	Color     Color
 	Cb        WidgetEventCB
 	Items     []*WidgetItem
 	Settings  WidgetSetting
@@ -15,7 +15,7 @@ type ListboxWidget struct {
 	Scrollpos int
 }
 
-func NewListboxWidget(rect Rect, margin Margin, attrs WidgetAttributes, cb WidgetEventCB, items []*WidgetItem, settings WidgetSetting) *ListboxWidget {
+func NewListboxWidget(rect Rect, margin Margin, color Color, cb WidgetEventCB, items []*WidgetItem, settings WidgetSetting) *ListboxWidget {
 	// If not specified, automatically set width and height based on listbox items.
 	if rect.H == 0 {
 		rect.H = len(items) + margin.T + margin.B
@@ -37,12 +37,12 @@ func NewListboxWidget(rect Rect, margin Margin, attrs WidgetAttributes, cb Widge
 		}
 	}
 
-	InitWidgetAttributes(&attrs)
+	InitColor(&color)
 
 	w := ListboxWidget{
 		Rect:      rect,
 		Margin:    margin,
-		Attrs:     attrs,
+		Color:     color,
 		Cb:        cb,
 		Items:     items,
 		Settings:  settings,
@@ -54,11 +54,11 @@ func NewListboxWidget(rect Rect, margin Margin, attrs WidgetAttributes, cb Widge
 }
 
 func (w *ListboxWidget) Draw() {
-	clearRect(w.Rect, w.Attrs.Bg)
+	clearRect(w.Rect, w.Color.Bg)
 
-	if w.Settings&WidgetBox != 0 {
+	if w.Settings&FmtBox != 0 {
 		boxRect := AddRectBox(w.Rect)
-		drawBox(boxRect, w.Attrs.Fg, w.Attrs.Bg)
+		drawBox(boxRect, w.Color.Fg, w.Color.Bg)
 	}
 
 	contentRect := AddRectMargin(w.Rect, w.Margin)
@@ -74,10 +74,10 @@ func (w *ListboxWidget) Draw() {
 		item := w.Items[i]
 		if w.Sel == i {
 			// Highlight selected item.
-			printspaces(w.Rect.W, w.Rect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg)
-			printw(item.Display, contentRect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg, contentRect.W)
+			printspaces(w.Rect.W, w.Rect.X, y, w.Color.HighlightFg, w.Color.HighlightBg)
+			printw(item.Display, contentRect.X, y, w.Color.HighlightFg, w.Color.HighlightBg, contentRect.W)
 		} else {
-			printw(item.Display, contentRect.X, y, w.Attrs.Fg, w.Attrs.Bg, contentRect.W)
+			printw(item.Display, contentRect.X, y, w.Color.Fg, w.Color.Bg, contentRect.W)
 		}
 		y++
 	}

@@ -7,14 +7,14 @@ import (
 type TableRow []string
 type CellSetting struct {
 	X, W  int
-	Attrs WidgetAttributes
+	Color Color
 }
 
 type TableWidget struct {
 	Rect         Rect
 	Margin       Margin
-	Attrs        WidgetAttributes
-	AttrsHeading WidgetAttributes
+	Color        Color
+	ColorHeading Color
 	Cb           WidgetEventCB
 	Cols         []CellSetting
 	Headings     []string
@@ -24,7 +24,7 @@ type TableWidget struct {
 	Scrollpos    int
 }
 
-func NewTableWidget(rect Rect, margin Margin, attrs WidgetAttributes, attrsHeading WidgetAttributes, cb WidgetEventCB, cols []CellSetting, headings []string, rows []TableRow, settings WidgetSetting) *TableWidget {
+func NewTableWidget(rect Rect, margin Margin, color Color, colorHeading Color, cb WidgetEventCB, cols []CellSetting, headings []string, rows []TableRow, settings WidgetSetting) *TableWidget {
 	// If not specified, automatically set width and height based on column settings.
 	if rect.H == 0 {
 		rect.H = len(rows) + margin.T + margin.B
@@ -42,19 +42,19 @@ func NewTableWidget(rect Rect, margin Margin, attrs WidgetAttributes, attrsHeadi
 		rect.W = maxlen + margin.L + margin.R
 	}
 
-	InitWidgetAttributes(&attrs)
-	if attrsHeading.Fg == 0 {
-		attrsHeading.Fg = attrs.Fg
+	InitColor(&color)
+	if colorHeading.Fg == 0 {
+		colorHeading.Fg = color.Fg
 	}
-	if attrsHeading.Bg == 0 {
-		attrsHeading.Bg = attrs.Bg
+	if colorHeading.Bg == 0 {
+		colorHeading.Bg = color.Bg
 	}
 
 	w := TableWidget{
 		Rect:         rect,
 		Margin:       margin,
-		Attrs:        attrs,
-		AttrsHeading: attrsHeading,
+		Color:        color,
+		ColorHeading: colorHeading,
 		Cb:           cb,
 		Cols:         cols,
 		Headings:     headings,
@@ -68,11 +68,11 @@ func NewTableWidget(rect Rect, margin Margin, attrs WidgetAttributes, attrsHeadi
 }
 
 func (w *TableWidget) Draw() {
-	clearRect(w.Rect, w.Attrs.Bg)
+	clearRect(w.Rect, w.Color.Bg)
 
-	if w.Settings&WidgetBox != 0 {
+	if w.Settings&FmtBox != 0 {
 		boxRect := AddRectBox(w.Rect)
-		drawBox(boxRect, w.Attrs.Fg, w.Attrs.Bg)
+		drawBox(boxRect, w.Color.Fg, w.Color.Bg)
 	}
 
 	contentRect := AddRectMargin(w.Rect, w.Margin)
@@ -88,7 +88,7 @@ func (w *TableWidget) Draw() {
 				continue
 			}
 			col := w.Cols[icol]
-			print(heading, contentRect.X+col.X, y, w.AttrsHeading.Fg, w.AttrsHeading.Bg)
+			print(heading, contentRect.X+col.X, y, w.ColorHeading.Fg, w.ColorHeading.Bg)
 		}
 		y++
 		endi = endi - 1
@@ -102,7 +102,7 @@ func (w *TableWidget) Draw() {
 	for irow := starti; irow <= endi; irow++ {
 		if w.Sel == irow {
 			// Highlight selected row.
-			printspaces(w.Rect.W, w.Rect.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg)
+			printspaces(w.Rect.W, w.Rect.X, y, w.Color.HighlightFg, w.Color.HighlightBg)
 		}
 
 		row := w.Rows[irow]
@@ -111,17 +111,17 @@ func (w *TableWidget) Draw() {
 				continue
 			}
 			col := w.Cols[icol]
-			fg := w.Attrs.Fg
-			if col.Attrs.Fg != 0 {
-				fg = col.Attrs.Fg
+			fg := w.Color.Fg
+			if col.Color.Fg != 0 {
+				fg = col.Color.Fg
 			}
-			bg := w.Attrs.Bg
-			if col.Attrs.Bg != 0 {
-				bg = col.Attrs.Bg
+			bg := w.Color.Bg
+			if col.Color.Bg != 0 {
+				bg = col.Color.Bg
 			}
 			if w.Sel == irow {
 				// Use highlight color for cell when in selected row.
-				printw(cell, contentRect.X+col.X, y, w.Attrs.HighlightFg, w.Attrs.HighlightBg, col.W)
+				printw(cell, contentRect.X+col.X, y, w.Color.HighlightFg, w.Color.HighlightBg, col.W)
 			} else {
 				printw(cell, contentRect.X+col.X, y, fg, bg, col.W)
 			}
