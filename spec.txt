@@ -32,7 +32,7 @@ Account
 account_id
 code TEXT
 name TEXT
-accounttype_id INTEGER
+accounttype_id
 currency_id
 
 
