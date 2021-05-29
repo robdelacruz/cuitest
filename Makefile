@@ -1,10 +1,11 @@
+SRCS = t.go tx.go txmenu.go txlistbox.go txlabel.go txtable.go txentry.go
 all: t
 
 dep:
 	go get -u github.com/nsf/termbox-go
 
-t: t.go widgets.go menuwidget.go listboxwidget.go labelwidget.go tablewidget.go entrywidget.go
-	go build -o t t.go widgets.go menuwidget.go listboxwidget.go labelwidget.go tablewidget.go entrywidget.go
+t: $(SRCS)
+	go build -o t $(SRCS)
 
 clean:
 	rm -rf t
