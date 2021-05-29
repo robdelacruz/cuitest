@@ -4,18 +4,18 @@ import (
 	tb "github.com/nsf/termbox-go"
 )
 
-type ListboxWidget struct {
-	Rect      Rect
-	Margin    Margin
-	Color     Color
-	Cb        WidgetEventCB
-	Items     []*WidgetItem
-	Settings  WidgetSetting
+type TxListbox struct {
+	Rect      TxRect
+	Margin    TxMargin
+	Color     TxColor
+	Cb        TxEventCB
+	Items     []*TxItem
+	Settings  TxSetting
 	Sel       int
 	Scrollpos int
 }
 
-func NewListboxWidget(rect Rect, margin Margin, color Color, cb WidgetEventCB, items []*WidgetItem, settings WidgetSetting) *ListboxWidget {
+func NewTxListbox(rect TxRect, margin TxMargin, color TxColor, cb TxEventCB, items []*TxItem, settings TxSetting) *TxListbox {
 	// If not specified, automatically set width and height based on listbox items.
 	if rect.H == 0 {
 		rect.H = len(items) + margin.T + margin.B
@@ -37,9 +37,9 @@ func NewListboxWidget(rect Rect, margin Margin, color Color, cb WidgetEventCB, i
 		}
 	}
 
-	InitColor(&color)
+	initColor(&color)
 
-	w := ListboxWidget{
+	w := TxListbox{
 		Rect:      rect,
 		Margin:    margin,
 		Color:     color,
@@ -49,19 +49,19 @@ func NewListboxWidget(rect Rect, margin Margin, color Color, cb WidgetEventCB, i
 		Sel:       0,
 		Scrollpos: 0,
 	}
-	w.PostSelItemEvent()
+	w.postSelItemEvent()
 	return &w
 }
 
-func (w *ListboxWidget) Draw() {
+func (w *TxListbox) Draw() {
 	clearRect(w.Rect, w.Color.Bg)
 
-	if w.Settings&FmtBox != 0 {
-		boxRect := AddRectBox(w.Rect)
+	if w.Settings&TxFmtBox != 0 {
+		boxRect := addRectBox(w.Rect)
 		drawBox(boxRect, w.Color.Fg, w.Color.Bg)
 	}
 
-	contentRect := AddRectMargin(w.Rect, w.Margin)
+	contentRect := addRectMargin(w.Rect, w.Margin)
 
 	starti := w.Scrollpos
 	endi := w.Scrollpos + contentRect.H - 1
@@ -83,7 +83,7 @@ func (w *ListboxWidget) Draw() {
 	}
 }
 
-func (w *ListboxWidget) HandleEvent(e tb.Event) bool {
+func (w *TxListbox) HandleEvent(e tb.Event) bool {
 	if e.Type != tb.EventKey {
 		return false
 	}
@@ -97,21 +97,21 @@ func (w *ListboxWidget) HandleEvent(e tb.Event) bool {
 		if w.Sel < 0 {
 			w.Sel = len(w.Items) - 1
 		}
-		w.AdjustScroll()
-		w.PostSelItemEvent()
+		w.adjustScroll()
+		w.postSelItemEvent()
 		return true
 	case tb.KeyArrowDown:
 		w.Sel++
 		if w.Sel > len(w.Items)-1 {
 			w.Sel = 0
 		}
-		w.AdjustScroll()
-		w.PostSelItemEvent()
+		w.adjustScroll()
+		w.postSelItemEvent()
 		return true
 	case tb.KeyEnter:
 		if w.Cb != nil {
-			we := WidgetEvent{
-				Code: WidgetEventEnter,
+			we := TxEvent{
+				Code: TxEventEnter,
 				P1:   w.Sel,
 				Item: w.Items[w.Sel],
 			}
@@ -120,8 +120,8 @@ func (w *ListboxWidget) HandleEvent(e tb.Event) bool {
 		return true
 	case tb.KeyEsc:
 		if w.Cb != nil {
-			we := WidgetEvent{
-				Code: WidgetEventEsc,
+			we := TxEvent{
+				Code: TxEventEsc,
 			}
 			w.Cb(&we)
 		}
@@ -130,8 +130,8 @@ func (w *ListboxWidget) HandleEvent(e tb.Event) bool {
 	return false
 }
 
-func (w *ListboxWidget) AdjustScroll() {
-	rect := AddRectMargin(w.Rect, w.Margin)
+func (w *TxListbox) adjustScroll() {
+	rect := addRectMargin(w.Rect, w.Margin)
 	starti := w.Scrollpos
 	endi := w.Scrollpos + rect.H - 1
 
@@ -148,21 +148,21 @@ func (w *ListboxWidget) AdjustScroll() {
 	}
 }
 
-func (w *ListboxWidget) SelItem() (int, *WidgetItem) {
+func (w *TxListbox) SelItem() (int, *TxItem) {
 	if len(w.Items) == 0 {
 		return -1, nil
 	}
 	return w.Sel, w.Items[w.Sel]
 }
 
-func (w *ListboxWidget) PostSelItemEvent() {
+func (w *TxListbox) postSelItemEvent() {
 	if len(w.Items) == 0 {
 		return
 	}
 
 	if w.Cb != nil {
-		we := WidgetEvent{
-			Code: WidgetEventSel,
+		we := TxEvent{
+			Code: TxEventSel,
 			P1:   w.Sel,
 			Item: w.Items[w.Sel],
 		}

@@ -7,65 +7,65 @@ import (
 	tb "github.com/nsf/termbox-go"
 )
 
-type Pos struct {
+type TxPos struct {
 	X, Y int
 }
-type Rect struct {
+type TxRect struct {
 	X, Y, W, H int
 }
-type Margin struct {
+type TxMargin struct {
 	T, B, L, R int
 }
 
-var Margin0 = Margin{0, 0, 0, 0}
-var Margin1 = Margin{1, 1, 1, 1}
-var MarginX = Margin{0, 0, 1, 1}
-var MarginY = Margin{1, 1, 0, 0}
+var TxMargin0 = TxMargin{0, 0, 0, 0}
+var TxMargin1 = TxMargin{1, 1, 1, 1}
+var TxMarginX = TxMargin{0, 0, 1, 1}
+var TxMarginY = TxMargin{1, 1, 0, 0}
 
-type Widget interface {
+type TxWidget interface {
 	Draw()
 	HandleEvent(e tb.Event) bool
 }
 
-type WidgetEventCode int
+type TxEventCode int
 
 const (
-	WidgetEventEnter WidgetEventCode = iota
-	WidgetEventEsc
-	WidgetEventSel
+	TxEventEnter TxEventCode = iota
+	TxEventEsc
+	TxEventSel
 )
 
-type WidgetEvent struct {
-	Code   WidgetEventCode
-	Item   *WidgetItem
+type TxEvent struct {
+	Code   TxEventCode
+	Item   *TxItem
 	P1     int
 	P2     int
 	Pnum   float32
 	Pstr   string
 	Detail interface{}
 }
-type WidgetEventCB func(we *WidgetEvent)
+type TxEventCB func(we *TxEvent)
 
-type WidgetSetting uint64
+type TxSetting uint64
 
 const (
-	FmtNormal WidgetSetting = 1 << iota
-	FmtCenter
-	FmtBox
+	TxFmtNormal TxSetting = 1 << iota
+	TxFmtCenter
+	TxFmtBox
 )
 
-type Color struct {
+type TxColor struct {
 	Fg, Bg                   tb.Attribute
 	HighlightFg, HighlightBg tb.Attribute
 }
 
-type WidgetItem struct {
+type TxItem struct {
 	Id      int
 	Sid     string
 	Display string
 }
 
-func InitColor(color *Color) {
+func initColor(color *TxColor) {
 	if color.Fg == 0 {
 		color.Fg = tb.ColorWhite
 	}
@@ -80,11 +80,11 @@ func InitColor(color *Color) {
 	}
 }
 
-func AddRectMargin(rect Rect, m Margin) Rect {
-	return Rect{rect.X + m.L, rect.Y + m.T, rect.W - m.L - m.R, rect.H - m.T - m.B}
+func addRectMargin(rect TxRect, m TxMargin) TxRect {
+	return TxRect{rect.X + m.L, rect.Y + m.T, rect.W - m.L - m.R, rect.H - m.T - m.B}
 }
-func AddRectBox(rect Rect) Rect {
-	return Rect{rect.X - 1, rect.Y - 1, rect.W + 2, rect.H + 2}
+func addRectBox(rect TxRect) TxRect {
+	return TxRect{rect.X - 1, rect.Y - 1, rect.W + 2, rect.H + 2}
 }
 
 func print0(s string, x, y int) {
@@ -133,7 +133,7 @@ func printcenter(s string, x, y int, fg, bg tb.Attribute, w int) {
 	}
 }
 
-func printRect(s string, rect Rect, fg, bg tb.Attribute) {
+func printRect(s string, rect TxRect, fg, bg tb.Attribute) {
 	ss := lexwords(s)
 
 	y := rect.Y
@@ -190,7 +190,7 @@ func lexwords(s string) []string {
 	return ss
 }
 
-func clearRect(rect Rect, bg tb.Attribute) {
+func clearRect(rect TxRect, bg tb.Attribute) {
 	for y := rect.Y; y < rect.Y+rect.H; y++ {
 		for x := rect.X; x < rect.X+rect.W; x++ {
 			tb.SetCell(x, y, ' ', 0, bg)
@@ -198,7 +198,7 @@ func clearRect(rect Rect, bg tb.Attribute) {
 	}
 }
 
-func drawBox(rect Rect, fg, bg tb.Attribute) {
+func drawBox(rect TxRect, fg, bg tb.Attribute) {
 	print("┌", rect.X, rect.Y, fg, bg)
 	print("┐", rect.X+rect.W-1, rect.Y, fg, bg)
 

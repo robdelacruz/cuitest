@@ -7,24 +7,24 @@ import (
 type TableRow []string
 type CellSetting struct {
 	X, W  int
-	Color Color
+	Color TxColor
 }
 
-type TableWidget struct {
-	Rect         Rect
-	Margin       Margin
-	Color        Color
-	ColorHeading Color
-	Cb           WidgetEventCB
+type TxTable struct {
+	Rect         TxRect
+	Margin       TxMargin
+	Color        TxColor
+	ColorHeading TxColor
+	Cb           TxEventCB
 	Cols         []CellSetting
 	Headings     []string
 	Rows         []TableRow
-	Settings     WidgetSetting
+	Settings     TxSetting
 	Sel          int
 	Scrollpos    int
 }
 
-func NewTableWidget(rect Rect, margin Margin, color Color, colorHeading Color, cb WidgetEventCB, cols []CellSetting, headings []string, rows []TableRow, settings WidgetSetting) *TableWidget {
+func NewTxTable(rect TxRect, margin TxMargin, color TxColor, colorHeading TxColor, cb TxEventCB, cols []CellSetting, headings []string, rows []TableRow, settings TxSetting) *TxTable {
 	// If not specified, automatically set width and height based on column settings.
 	if rect.H == 0 {
 		rect.H = len(rows) + margin.T + margin.B
@@ -42,7 +42,7 @@ func NewTableWidget(rect Rect, margin Margin, color Color, colorHeading Color, c
 		rect.W = maxlen + margin.L + margin.R
 	}
 
-	InitColor(&color)
+	initColor(&color)
 	if colorHeading.Fg == 0 {
 		colorHeading.Fg = color.Fg
 	}
@@ -50,7 +50,7 @@ func NewTableWidget(rect Rect, margin Margin, color Color, colorHeading Color, c
 		colorHeading.Bg = color.Bg
 	}
 
-	w := TableWidget{
+	w := TxTable{
 		Rect:         rect,
 		Margin:       margin,
 		Color:        color,
@@ -67,15 +67,15 @@ func NewTableWidget(rect Rect, margin Margin, color Color, colorHeading Color, c
 	return &w
 }
 
-func (w *TableWidget) Draw() {
+func (w *TxTable) Draw() {
 	clearRect(w.Rect, w.Color.Bg)
 
-	if w.Settings&FmtBox != 0 {
-		boxRect := AddRectBox(w.Rect)
+	if w.Settings&TxFmtBox != 0 {
+		boxRect := addRectBox(w.Rect)
 		drawBox(boxRect, w.Color.Fg, w.Color.Bg)
 	}
 
-	contentRect := AddRectMargin(w.Rect, w.Margin)
+	contentRect := addRectMargin(w.Rect, w.Margin)
 
 	starti := w.Scrollpos
 	endi := w.Scrollpos + contentRect.H - 1
@@ -130,7 +130,7 @@ func (w *TableWidget) Draw() {
 	}
 }
 
-func (w *TableWidget) HandleEvent(e tb.Event) bool {
+func (w *TxTable) HandleEvent(e tb.Event) bool {
 	if e.Type != tb.EventKey {
 		return false
 	}
@@ -144,21 +144,21 @@ func (w *TableWidget) HandleEvent(e tb.Event) bool {
 		if w.Sel < 0 {
 			w.Sel = len(w.Rows) - 1
 		}
-		w.AdjustScroll()
-		w.PostSelRowEvent()
+		w.adjustScroll()
+		w.postSelRowEvent()
 		return true
 	case tb.KeyArrowDown:
 		w.Sel++
 		if w.Sel > len(w.Rows)-1 {
 			w.Sel = 0
 		}
-		w.AdjustScroll()
-		w.PostSelRowEvent()
+		w.adjustScroll()
+		w.postSelRowEvent()
 		return true
 	case tb.KeyEnter:
 		if w.Cb != nil {
-			we := WidgetEvent{
-				Code: WidgetEventEnter,
+			we := TxEvent{
+				Code: TxEventEnter,
 				P1:   w.Sel,
 			}
 			w.Cb(&we)
@@ -166,8 +166,8 @@ func (w *TableWidget) HandleEvent(e tb.Event) bool {
 		return true
 	case tb.KeyEsc:
 		if w.Cb != nil {
-			we := WidgetEvent{
-				Code: WidgetEventEsc,
+			we := TxEvent{
+				Code: TxEventEsc,
 			}
 			w.Cb(&we)
 		}
@@ -176,8 +176,8 @@ func (w *TableWidget) HandleEvent(e tb.Event) bool {
 	return false
 }
 
-func (w *TableWidget) AdjustScroll() {
-	rect := AddRectMargin(w.Rect, w.Margin)
+func (w *TxTable) adjustScroll() {
+	rect := addRectMargin(w.Rect, w.Margin)
 	starti := w.Scrollpos
 	endi := w.Scrollpos + rect.H - 1
 
@@ -198,21 +198,21 @@ func (w *TableWidget) AdjustScroll() {
 	}
 }
 
-func (w *TableWidget) SelItem() (int, TableRow) {
+func (w *TxTable) SelItem() (int, TableRow) {
 	if len(w.Rows) == 0 {
 		return -1, nil
 	}
 	return w.Sel, w.Rows[w.Sel]
 }
 
-func (w *TableWidget) PostSelRowEvent() {
+func (w *TxTable) postSelRowEvent() {
 	if len(w.Rows) == 0 {
 		return
 	}
 
 	if w.Cb != nil {
-		we := WidgetEvent{
-			Code: WidgetEventSel,
+		we := TxEvent{
+			Code: TxEventSel,
 			P1:   w.Sel,
 		}
 		w.Cb(&we)

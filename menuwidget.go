@@ -4,18 +4,18 @@ import (
 	tb "github.com/nsf/termbox-go"
 )
 
-type MenuWidget struct {
-	Rect      Rect
-	Margin    Margin
-	Color     Color
-	Cb        WidgetEventCB
-	Items     []*WidgetItem
-	Settings  WidgetSetting
+type TxMenu struct {
+	Rect      TxRect
+	Margin    TxMargin
+	Color     TxColor
+	Cb        TxEventCB
+	Items     []*TxItem
+	Settings  TxSetting
 	Sel       int
 	Scrollpos int
 }
 
-func NewMenuWidget(rect Rect, margin Margin, color Color, cb WidgetEventCB, items []*WidgetItem, settings WidgetSetting) *MenuWidget {
+func NewTxMenu(rect TxRect, margin TxMargin, color TxColor, cb TxEventCB, items []*TxItem, settings TxSetting) *TxMenu {
 	// If not specified, automatically set width and height based on menu items.
 	if rect.H == 0 {
 		rect.H = len(items) + margin.T + margin.B
@@ -37,9 +37,9 @@ func NewMenuWidget(rect Rect, margin Margin, color Color, cb WidgetEventCB, item
 		}
 	}
 
-	InitColor(&color)
+	initColor(&color)
 
-	w := MenuWidget{
+	w := TxMenu{
 		Rect:      rect,
 		Margin:    margin,
 		Color:     color,
@@ -52,15 +52,15 @@ func NewMenuWidget(rect Rect, margin Margin, color Color, cb WidgetEventCB, item
 	return &w
 }
 
-func (w *MenuWidget) Draw() {
+func (w *TxMenu) Draw() {
 	clearRect(w.Rect, w.Color.Bg)
 
-	if w.Settings&FmtBox != 0 {
-		boxRect := AddRectBox(w.Rect)
+	if w.Settings&TxFmtBox != 0 {
+		boxRect := addRectBox(w.Rect)
 		drawBox(boxRect, w.Color.Fg, w.Color.Bg)
 	}
 
-	contentRect := AddRectMargin(w.Rect, w.Margin)
+	contentRect := addRectMargin(w.Rect, w.Margin)
 
 	starti := w.Scrollpos
 	endi := w.Scrollpos + contentRect.H - 1
@@ -74,14 +74,14 @@ func (w *MenuWidget) Draw() {
 		if w.Sel == i {
 			// Highlight selected menu item
 			printspaces(w.Rect.W, w.Rect.X, y, w.Color.HighlightFg, w.Color.HighlightBg)
-			if w.Settings&FmtCenter != 0 {
+			if w.Settings&TxFmtCenter != 0 {
 				printcenter(item.Display, contentRect.X, y, w.Color.HighlightFg, w.Color.HighlightBg, contentRect.W)
 				printcenter(item.Display, w.Rect.X, y, w.Color.HighlightFg, w.Color.HighlightBg, w.Rect.W)
 			} else {
 				printw(item.Display, contentRect.X, y, w.Color.HighlightFg, w.Color.HighlightBg, contentRect.W)
 			}
 		} else {
-			if w.Settings&FmtCenter != 0 {
+			if w.Settings&TxFmtCenter != 0 {
 				printcenter(item.Display, contentRect.X, y, w.Color.Fg, w.Color.Bg, contentRect.W)
 			} else {
 				printw(item.Display, contentRect.X, y, w.Color.Fg, w.Color.Bg, contentRect.W)
@@ -91,7 +91,7 @@ func (w *MenuWidget) Draw() {
 	}
 }
 
-func (w *MenuWidget) HandleEvent(e tb.Event) bool {
+func (w *TxMenu) HandleEvent(e tb.Event) bool {
 	if e.Type != tb.EventKey {
 		return false
 	}
@@ -105,19 +105,19 @@ func (w *MenuWidget) HandleEvent(e tb.Event) bool {
 		if w.Sel < 0 {
 			w.Sel = len(w.Items) - 1
 		}
-		w.AdjustScroll()
+		w.adjustScroll()
 		return true
 	case tb.KeyArrowDown:
 		w.Sel++
 		if w.Sel > len(w.Items)-1 {
 			w.Sel = 0
 		}
-		w.AdjustScroll()
+		w.adjustScroll()
 		return true
 	case tb.KeyEnter:
 		if w.Cb != nil {
-			we := WidgetEvent{
-				Code: WidgetEventEnter,
+			we := TxEvent{
+				Code: TxEventEnter,
 				P1:   w.Sel,
 				Item: w.Items[w.Sel],
 			}
@@ -126,8 +126,8 @@ func (w *MenuWidget) HandleEvent(e tb.Event) bool {
 		return true
 	case tb.KeyEsc:
 		if w.Cb != nil {
-			we := WidgetEvent{
-				Code: WidgetEventEsc,
+			we := TxEvent{
+				Code: TxEventEsc,
 			}
 			w.Cb(&we)
 		}
@@ -136,8 +136,8 @@ func (w *MenuWidget) HandleEvent(e tb.Event) bool {
 	return false
 }
 
-func (w *MenuWidget) AdjustScroll() {
-	rect := AddRectMargin(w.Rect, w.Margin)
+func (w *TxMenu) adjustScroll() {
+	rect := addRectMargin(w.Rect, w.Margin)
 	starti := w.Scrollpos
 	endi := w.Scrollpos + rect.H - 1
 

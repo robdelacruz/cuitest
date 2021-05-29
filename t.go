@@ -238,8 +238,8 @@ type MainWindow struct {
 	width, height int
 
 	smileyw *Smiley
-	labelw  *LabelWidget
-	popupw  Widget
+	labelw  *TxLabel
+	popupw  TxWidget
 }
 
 func NewMainWindow() *MainWindow {
@@ -254,35 +254,35 @@ func NewMainWindow() *MainWindow {
 	grey39 := tb.Attribute(242)
 	gold1 := tb.Attribute(221)
 
-	color := Color{
+	color := TxColor{
 		Fg: gold1,
 		Bg: grey39,
 	}
 
 	lbltext := "Now is the time for all good men to come to the aid of the party.\n\nThe quick brown fox jumps over the lazy dog. Now is the time for all good men to come to the aid of the party. The quick brown fox jumps over the lazy dog. Now is the time for all good men to come to the aid of the party. The quick brown fox jumps over the lazy dog."
 
-	w.labelw = NewLabelWidget(Rect{1, 20, 30, 10}, MarginX, color, lbltext, FmtBox)
+	w.labelw = NewTxLabel(TxRect{1, 20, 30, 10}, TxMarginX, color, lbltext, TxFmtBox)
 
 	return &w
 }
 
-func (w *MainWindow) popupCB(we *WidgetEvent) {
-	if we.Code == WidgetEventEnter {
-		_, ok := w.popupw.(*MenuWidget)
+func (w *MainWindow) popupCB(we *TxEvent) {
+	if we.Code == TxEventEnter {
+		_, ok := w.popupw.(*TxMenu)
 		if ok {
 			sel := we.P1
 			item := we.Item
 			w.labelw.SetText(fmt.Sprintf("Selected menu option %d: %s\n", sel, item.Display))
 		}
-		_, ok = w.popupw.(*ListboxWidget)
+		_, ok = w.popupw.(*TxListbox)
 		if ok {
 			w.labelw.SetText(fmt.Sprintf("Selected listbox item:\n%s", we.Item.Display))
 		}
 		w.popupw = nil
-	} else if we.Code == WidgetEventEsc {
+	} else if we.Code == TxEventEsc {
 		w.labelw.SetText("*** Canceled operation ***")
 		w.popupw = nil
-	} else if we.Code == WidgetEventSel {
+	} else if we.Code == TxEventSel {
 		if we.Item != nil {
 			w.labelw.SetText(fmt.Sprintf("[%s]: %s", we.Item.Sid, we.Item.Display))
 		}
@@ -315,55 +315,55 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 	plum1 := tb.Attribute(220)
 	gold1 := tb.Attribute(221)
 
-	color1 := Color{
+	color1 := TxColor{
 		Fg:          darkolivegreen,
 		Bg:          black,
 		HighlightFg: grey39,
 		HighlightBg: white,
 	}
-	color2 := Color{
+	color2 := TxColor{
 		Fg:          darkorange,
 		Bg:          black,
 		HighlightFg: gold1,
 		HighlightBg: grey39,
 	}
-	color3 := Color{
+	color3 := TxColor{
 		Fg: plum1,
 		Bg: grey39,
 	}
-	color4 := Color{
+	color4 := TxColor{
 		Fg: darkolivegreen,
 		Bg: grey39,
 	}
 
 	if e.Ch == 'm' {
-		items := []*WidgetItem{
-			&WidgetItem{1, "option1", "Menu Option 1 abc"},
-			&WidgetItem{2, "option2", "Option 2 def"},
-			&WidgetItem{3, "option3", "Option 3 ghijkl"},
-			&WidgetItem{4, "option4", "Option 4 some more text"},
-			&WidgetItem{5, "option5", "Option 5 xyz"},
-			&WidgetItem{6, "option6", "Option 6 lmnop"},
-			&WidgetItem{7, "option7", "Option 7 qrstuvw"},
-			&WidgetItem{8, "option8", "Option 8 12345"},
-			&WidgetItem{9, "option9", "Option 9 123"},
-			&WidgetItem{10, "option10", "Option 10"},
+		items := []*TxItem{
+			&TxItem{1, "option1", "Menu Option 1 abc"},
+			&TxItem{2, "option2", "Option 2 def"},
+			&TxItem{3, "option3", "Option 3 ghijkl"},
+			&TxItem{4, "option4", "Option 4 some more text"},
+			&TxItem{5, "option5", "Option 5 xyz"},
+			&TxItem{6, "option6", "Option 6 lmnop"},
+			&TxItem{7, "option7", "Option 7 qrstuvw"},
+			&TxItem{8, "option8", "Option 8 12345"},
+			&TxItem{9, "option9", "Option 9 123"},
+			&TxItem{10, "option10", "Option 10"},
 		}
-		//w.popupw = NewMenuWidget(Rect{5, 1, 0, 0}, Margin0, color1, w.popupCB, items, FmtBox|FmtCenter)
-		w.popupw = NewMenuWidget(Rect{5, 1, 31, 0}, MarginX, color1, w.popupCB, items, FmtBox|FmtCenter)
+		//w.popupw = NewTxMenu(TxRect{5, 1, 0, 0}, TxMargin0, color1, w.popupCB, items, TxFmtBox|TxFmtCenter)
+		w.popupw = NewTxMenu(TxRect{5, 1, 31, 0}, TxMarginX, color1, w.popupCB, items, TxFmtBox|TxFmtCenter)
 		return true
 	} else if e.Ch == 'l' {
-		items := []*WidgetItem{
-			&WidgetItem{1, "line1", "Now is the time"},
-			&WidgetItem{2, "line2", "for all good men"},
-			&WidgetItem{3, "line3", "to come to the aid"},
-			&WidgetItem{4, "line4", "of the party."},
-			&WidgetItem{5, "line5", "-- typing drill"},
+		items := []*TxItem{
+			&TxItem{1, "line1", "Now is the time"},
+			&TxItem{2, "line2", "for all good men"},
+			&TxItem{3, "line3", "to come to the aid"},
+			&TxItem{4, "line4", "of the party."},
+			&TxItem{5, "line5", "-- typing drill"},
 		}
-		w.popupw = NewListboxWidget(Rect{10, 1, 30, 0}, MarginX, color2, w.popupCB, items, FmtBox)
+		w.popupw = NewTxListbox(TxRect{10, 1, 30, 0}, TxMarginX, color2, w.popupCB, items, TxFmtBox)
 		return true
 	} else if e.Ch == 't' {
-		var cellColor Color
+		var cellColor TxColor
 		cols := []CellSetting{
 			CellSetting{0, 15, cellColor},
 			CellSetting{15, 10, cellColor},
@@ -379,11 +379,11 @@ func (w *MainWindow) HandleEvent(e tb.Event) bool {
 			TableRow{"of the", "party.", ""},
 			TableRow{"12345", "678", "9012"},
 		}
-		//w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, color3, color1, w.popupCB, cols, headings, rows, FmtBox)
-		w.popupw = NewTableWidget(Rect{5, 5, 0, 0}, Margin1, color3, color1, w.popupCB, cols, headings, rows, FmtCenter)
+		//w.popupw = NewTxTable(TxRect{5, 5, 0, 0}, color3, color1, w.popupCB, cols, headings, rows, TxFmtBox)
+		w.popupw = NewTxTable(TxRect{5, 5, 0, 0}, TxMargin1, color3, color1, w.popupCB, cols, headings, rows, TxFmtCenter)
 		return true
 	} else if e.Ch == 'e' {
-		w.popupw = NewEntryWidget(Rect{5, 5, 30, 1}, Margin0, color4, w.popupCB, "Entry Text", FmtBox)
+		w.popupw = NewTxEntry(TxRect{5, 5, 30, 1}, TxMargin0, color4, w.popupCB, "Entry Text", TxFmtBox)
 		return true
 	}
 

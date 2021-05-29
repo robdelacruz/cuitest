@@ -4,15 +4,15 @@ import (
 	tb "github.com/nsf/termbox-go"
 )
 
-type LabelWidget struct {
-	Rect     Rect
-	Margin   Margin
-	Color    Color
+type TxLabel struct {
+	Rect     TxRect
+	Margin   TxMargin
+	Color    TxColor
 	Text     string
-	Settings WidgetSetting
+	Settings TxSetting
 }
 
-func NewLabelWidget(rect Rect, margin Margin, color Color, text string, settings WidgetSetting) *LabelWidget {
+func NewTxLabel(rect TxRect, margin TxMargin, color TxColor, text string, settings TxSetting) *TxLabel {
 	if rect.H == 0 {
 		rect.H = 1
 	}
@@ -20,9 +20,9 @@ func NewLabelWidget(rect Rect, margin Margin, color Color, text string, settings
 		rect.W = 10
 	}
 
-	InitColor(&color)
+	initColor(&color)
 
-	w := LabelWidget{
+	w := TxLabel{
 		Rect:     rect,
 		Margin:   margin,
 		Color:    color,
@@ -32,22 +32,22 @@ func NewLabelWidget(rect Rect, margin Margin, color Color, text string, settings
 	return &w
 }
 
-func (w *LabelWidget) Draw() {
+func (w *TxLabel) Draw() {
 	clearRect(w.Rect, w.Color.Bg)
 
-	if w.Settings&FmtBox != 0 {
-		boxRect := AddRectBox(w.Rect)
+	if w.Settings&TxFmtBox != 0 {
+		boxRect := addRectBox(w.Rect)
 		drawBox(boxRect, w.Color.Fg, w.Color.Bg)
 	}
 
-	rect := AddRectMargin(w.Rect, w.Margin)
+	rect := addRectMargin(w.Rect, w.Margin)
 	printRect(w.Text, rect, w.Color.Fg, w.Color.Bg)
 }
 
-func (w *LabelWidget) HandleEvent(e tb.Event) bool {
+func (w *TxLabel) HandleEvent(e tb.Event) bool {
 	return false
 }
 
-func (w *LabelWidget) SetText(text string) {
+func (w *TxLabel) SetText(text string) {
 	w.Text = text
 }
