@@ -114,32 +114,6 @@ func fileExists(file string) bool {
 	return true
 }
 
-//*** DB functions ***
-func sqlstmt(db *sql.DB, s string) *sql.Stmt {
-	stmt, err := db.Prepare(s)
-	if err != nil {
-		log.Fatalf("db.Prepare() sql: '%s'\nerror: '%s'", s, err)
-	}
-	return stmt
-}
-func sqlexec(db *sql.DB, s string, pp ...interface{}) (sql.Result, error) {
-	stmt := sqlstmt(db, s)
-	defer stmt.Close()
-	return stmt.Exec(pp...)
-}
-func txstmt(tx *sql.Tx, s string) *sql.Stmt {
-	stmt, err := tx.Prepare(s)
-	if err != nil {
-		log.Fatalf("tx.Prepare() sql: '%s'\nerror: '%s'", s, err)
-	}
-	return stmt
-}
-func txexec(tx *sql.Tx, s string, pp ...interface{}) (sql.Result, error) {
-	stmt := txstmt(tx, s)
-	defer stmt.Close()
-	return stmt.Exec(pp...)
-}
-
 func pollEvents(chev chan tb.Event) {
 	for {
 		e := tb.PollEvent()
@@ -164,9 +138,8 @@ func createTables(newfile string) {
 	}
 
 	ss := []string{
-		"CREATE TABLE accounttype (accounttype_id INTEGER PRIMARY KEY NOT NULL, name TEXT);",
 		"CREATE TABLE currency (currency_id INTEGER PRIMARY KEY NOT NULL, name TEXT, usdrate REAL);",
-		"CREATE TABLE account (account_id INTEGER PRIMARY KEY NOT NULL, code TEXT, name TEXT, accounttype_id INTEGER, currency_id INTEGER);",
+		"CREATE TABLE account (account_id INTEGER PRIMARY KEY NOT NULL, code TEXT, name TEXT, accounttype INTEGER, currency_id INTEGER);",
 		"CREATE TABLE trans (trans_id INTEGER PRIMARY KEY NOT NULL, account_id INTEGER, date TEXT, ref TEXT, desc TEXT, amt REAL);",
 	}
 
