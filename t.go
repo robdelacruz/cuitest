@@ -161,6 +161,58 @@ func createTables(newfile string) {
 		log.Printf("DB error (%s)\n", err)
 		os.Exit(1)
 	}
+
+	initTestData(db)
+}
+
+func initTestData(db *sql.DB) {
+	c1 := Currency{
+		Name:    "USD",
+		Usdrate: 1.0,
+	}
+	c2 := Currency{
+		Name:    "PHP",
+		Usdrate: 48.0,
+	}
+	usdid, err := createCurrency(db, &c1)
+	if err != nil {
+		panic(err)
+	}
+	phpid, err := createCurrency(db, &c2)
+	if err != nil {
+		panic(err)
+	}
+
+	a1 := Account{
+		Code:        "bpichecking",
+		Name:        "BPI Checking Account",
+		AccountType: BankAccount,
+		Currencyid:  phpid,
+	}
+	a2 := Account{
+		Code:        "bpisavings",
+		Name:        "BPI Savings Account",
+		AccountType: BankAccount,
+		Currencyid:  phpid,
+	}
+	a3 := Account{
+		Code:        "bpiusd",
+		Name:        "BPI USD",
+		AccountType: BankAccount,
+		Currencyid:  usdid,
+	}
+	_, err = createAccount(db, &a1)
+	if err != nil {
+		panic(err)
+	}
+	_, err = createAccount(db, &a2)
+	if err != nil {
+		panic(err)
+	}
+	_, err = createAccount(db, &a3)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func parseArgs(args []string) (map[string]string, []string) {

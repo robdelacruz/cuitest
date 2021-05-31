@@ -14,11 +14,11 @@ const (
 )
 
 type Account struct {
-	Accountid   int64  `json:"accountid"`
-	Code        string `json:"code"`
-	Name        string `json:"name"`
-	AccountType int    `json:"int"`
-	Currencyid  int64  `json:"currencyid"`
+	Accountid   int64       `json:"accountid"`
+	Code        string      `json:"code"`
+	Name        string      `json:"name"`
+	AccountType AccountType `json:"int"`
+	Currencyid  int64       `json:"currencyid"`
 }
 
 func createAccount(db *sql.DB, a *Account) (int64, error) {
