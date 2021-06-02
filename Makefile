@@ -1,5 +1,5 @@
 SRCS = t.go waccounts.go
-SRCS2 = tx.go txmenu.go txlistbox.go txlabel.go txtable.go txentry.go
+SRCS2 = tx.go txmenu.go txlistbox.go txlabel.go txtable.go txentry.go txcell.go
 SRCS3 = db.go dbaccount.go dbcurrency.go
 all: t
 

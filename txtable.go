@@ -4,8 +4,8 @@ import (
 	tb "github.com/nsf/termbox-go"
 )
 
-type TableRow []string
 type CellSetting struct {
+	Sfmt  string
 	X, W  int
 	Color TxColor
 }
@@ -18,13 +18,13 @@ type TxTable struct {
 	Cb           TxEventCB
 	Cols         []CellSetting
 	Headings     []string
-	Rows         []TableRow
+	Rows         [][]interface{}
 	Settings     TxSetting
 	Sel          int
 	Scrollpos    int
 }
 
-func NewTxTable(rect TxRect, margin TxMargin, color TxColor, colorHeading TxColor, cb TxEventCB, cols []CellSetting, headings []string, rows []TableRow, settings TxSetting) *TxTable {
+func NewTxTable(rect TxRect, margin TxMargin, color TxColor, colorHeading TxColor, cb TxEventCB, cols []CellSetting, headings []string, rows [][]interface{}, settings TxSetting) *TxTable {
 	// If not specified, automatically set width and height based on column settings.
 	if rect.H == 0 {
 		rect.H = len(rows) + margin.T + margin.B
@@ -121,9 +121,9 @@ func (w *TxTable) Draw() {
 			}
 			if w.Sel == irow {
 				// Use highlight color for cell when in selected row.
-				printw(cell, contentRect.X+col.X, y, w.Color.HighlightFg, w.Color.HighlightBg, col.W)
+				printw(cell.(string), contentRect.X+col.X, y, w.Color.HighlightFg, w.Color.HighlightBg, col.W)
 			} else {
-				printw(cell, contentRect.X+col.X, y, fg, bg, col.W)
+				printw(cell.(string), contentRect.X+col.X, y, fg, bg, col.W)
 			}
 		}
 		y++
@@ -198,7 +198,7 @@ func (w *TxTable) adjustScroll() {
 	}
 }
 
-func (w *TxTable) SelItem() (int, TableRow) {
+func (w *TxTable) SelItem() (int, []interface{}) {
 	if len(w.Rows) == 0 {
 		return -1, nil
 	}

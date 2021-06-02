@@ -18,17 +18,17 @@ func NewWAccounts(db *sql.DB, rect TxRect, clr TxColor) *WAccounts {
 	initColor(&clr)
 
 	cols := []CellSetting{
-		CellSetting{0, 40, clr},
-		CellSetting{40, 12, clr},
-		CellSetting{52, 12, clr},
+		CellSetting{"%s", 0, 40, clr},
+		CellSetting{"%s", 40, 12, clr},
+		CellSetting{"%s", 52, 12, clr},
 	}
 	headings := []string{"Desc", "Deposit", "Withdraw"}
-	rows := []TableRow{
-		TableRow{"Initial deposit", "12345.67", ""},
-		TableRow{"withdraw", "", "100.00"},
-		TableRow{"transfer to savings", "", "550.25"},
-		TableRow{"deposit paycheck", "345.67", ""},
-		TableRow{"interest", "2.80", ""},
+	rows := [][]interface{}{
+		[]interface{}{"Initial deposit", "12345.67", ""},
+		[]interface{}{"withdraw", "", "100.00"},
+		[]interface{}{"transfer to savings", "", "550.25"},
+		[]interface{}{"deposit paycheck", "345.67", ""},
+		[]interface{}{"interest", "2.80", ""},
 	}
 	tbl := NewTxTable(rect, TxMargin0, clr, TxColor{}, nil, cols, headings, rows, 0)
 	w := WAccounts{
