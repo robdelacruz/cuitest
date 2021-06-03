@@ -94,23 +94,22 @@ func run(args []string) error {
 		HighlightFg: grey39,
 		HighlightBg: white,
 	}
-	r := TxRect{5, 5, 20, 1}
-	sfmt := "%12.2f"
-	wcell1 := NewTxCell(r, clr1, sfmt, 1.2345, 0)
-	r.Y++
-	wcell2 := NewTxCell(r, clr1, sfmt, 506123.789, 0)
-	r.Y++
-	wcell3 := NewTxCell(r, clr1, sfmt, 87123.2345, 0)
-	r.Y++
-	wcell4 := NewTxCell(r, clr1, sfmt, 12398765.2345, 0)
-	r.Y++
-	wcell5 := NewTxCell(r, clr1, "%10s", "abcde", 0)
-
-	wcell1.Draw()
-	wcell2.Draw()
-	wcell3.Draw()
-	wcell4.Draw()
-	wcell5.Draw()
+	r := TxRect{5, 5, 80, 30}
+	cols := []TxCellSetting{
+		{"%s", 0, 40, clr1, 0},
+		{"%12.2f", 20, 12, clr1, 0},
+		{"%12.2f", 32, 12, clr1, 0},
+	}
+	hh := []string{"Desc", "Deposit", "Withdraw"}
+	rows := []TxTableRow{
+		TxTableRow{"initial bal", 1.2345, nil},
+		TxTableRow{"deposit paycheck", 56123.789, nil},
+		TxTableRow{"withdraw", nil, 2000.0},
+		TxTableRow{"transfer to savings account", nil, 11234.56},
+		TxTableRow{"buy 5 shares AAPL", 897.12345, nil},
+	}
+	tbl := NewTxTable(r, TxMargin0, clr1, clr1, nil, cols, hh, rows, 0)
+	tbl.Draw()
 	tb.Flush()
 
 	chev := make(chan tb.Event)
@@ -121,6 +120,10 @@ func run(args []string) error {
 
 		if e.Ch == 'q' {
 			break
+		}
+		if tbl.HandleEvent(e) {
+			tbl.Draw()
+			tb.Flush()
 		}
 	}
 	return nil

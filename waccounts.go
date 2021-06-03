@@ -17,24 +17,10 @@ type WAccounts struct {
 func NewWAccounts(db *sql.DB, rect TxRect, clr TxColor) *WAccounts {
 	initColor(&clr)
 
-	cols := []CellSetting{
-		CellSetting{"%s", 0, 40, clr},
-		CellSetting{"%s", 40, 12, clr},
-		CellSetting{"%s", 52, 12, clr},
-	}
-	headings := []string{"Desc", "Deposit", "Withdraw"}
-	rows := [][]interface{}{
-		[]interface{}{"Initial deposit", "12345.67", ""},
-		[]interface{}{"withdraw", "", "100.00"},
-		[]interface{}{"transfer to savings", "", "550.25"},
-		[]interface{}{"deposit paycheck", "345.67", ""},
-		[]interface{}{"interest", "2.80", ""},
-	}
-	tbl := NewTxTable(rect, TxMargin0, clr, TxColor{}, nil, cols, headings, rows, 0)
 	w := WAccounts{
 		db:   db,
 		rect: rect,
-		tbl:  tbl,
+		tbl:  nil,
 	}
 	return &w
 }

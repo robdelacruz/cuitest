@@ -1,14 +1,18 @@
 package main
 
 import (
+	"fmt"
 	tb "github.com/nsf/termbox-go"
 )
 
-type CellSetting struct {
-	Sfmt  string
-	X, W  int
-	Color TxColor
+type TxCellSetting struct {
+	Sfmt     string
+	X, W     int
+	Color    TxColor
+	Settings TxSetting
 }
+
+type TxTableRow []interface{}
 
 type TxTable struct {
 	Rect         TxRect
@@ -16,15 +20,15 @@ type TxTable struct {
 	Color        TxColor
 	ColorHeading TxColor
 	Cb           TxEventCB
-	Cols         []CellSetting
+	Cols         []TxCellSetting
 	Headings     []string
-	Rows         [][]interface{}
+	Rows         []TxTableRow
 	Settings     TxSetting
 	Sel          int
 	Scrollpos    int
 }
 
-func NewTxTable(rect TxRect, margin TxMargin, color TxColor, colorHeading TxColor, cb TxEventCB, cols []CellSetting, headings []string, rows [][]interface{}, settings TxSetting) *TxTable {
+func NewTxTable(rect TxRect, margin TxMargin, color TxColor, colorHeading TxColor, cb TxEventCB, cols []TxCellSetting, headings []string, rows []TxTableRow, settings TxSetting) *TxTable {
 	// If not specified, automatically set width and height based on column settings.
 	if rect.H == 0 {
 		rect.H = len(rows) + margin.T + margin.B
@@ -107,10 +111,15 @@ func (w *TxTable) Draw() {
 
 		row := w.Rows[irow]
 		for icol, cell := range row {
+			if cell == nil {
+				continue
+			}
 			if icol > len(w.Cols)-1 {
 				continue
 			}
 			col := w.Cols[icol]
+
+			// CellSetting color overrides Table color.
 			fg := w.Color.Fg
 			if col.Color.Fg != 0 {
 				fg = col.Color.Fg
@@ -119,11 +128,23 @@ func (w *TxTable) Draw() {
 			if col.Color.Bg != 0 {
 				bg = col.Color.Bg
 			}
+
+			// Use highlight color for cell when in selected row.
 			if w.Sel == irow {
-				// Use highlight color for cell when in selected row.
-				printw(cell.(string), contentRect.X+col.X, y, w.Color.HighlightFg, w.Color.HighlightBg, col.W)
+				fg = w.Color.HighlightFg
+				bg = w.Color.HighlightBg
+			}
+
+			var scell string
+			if col.Sfmt != "" {
+				scell = fmt.Sprintf(col.Sfmt, cell)
 			} else {
-				printw(cell.(string), contentRect.X+col.X, y, fg, bg, col.W)
+				scell = fmt.Sprintf("%v", cell)
+			}
+			if col.Settings&TxFmtCenter != 0 {
+				printcenter(scell, contentRect.X+col.X, y, fg, bg, col.W)
+			} else {
+				printw(scell, contentRect.X+col.X, y, fg, bg, col.W)
 			}
 		}
 		y++
