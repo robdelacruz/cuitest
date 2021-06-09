@@ -59,6 +59,8 @@ type TxColor struct {
 	HighlightFg, HighlightBg tb.Attribute
 }
 
+var TxColorBW = TxColor{tb.ColorWhite, tb.ColorBlack, tb.ColorBlack, tb.ColorWhite}
+
 type TxItem struct {
 	Id      int
 	Sid     string

@@ -17,10 +17,28 @@ type WAccounts struct {
 func NewWAccounts(db *sql.DB, rect TxRect, clr TxColor) *WAccounts {
 	initColor(&clr)
 
+	aa, err := findAccounts(db, " 1=1 ORDER BY accounttype, name")
+	if err != nil {
+		aa = []*Account{}
+	}
+
+	cols := []TxCellSetting{
+		{"%s", 0, 40, TxColorBW, 0},
+		{"%12.2f", 40, 12, TxColorBW, 0},
+	}
+	hh := []string{"Name", "Balance"}
+	var rows []TxTableRow
+	for _, a := range aa {
+		bal := balAccount(db, a.Accountid)
+		rows = append(rows, TxTableRow{a.Name, bal})
+	}
+	r := TxRect{0, 0, rect.W, rect.H}
+	tbl := NewTxTable(r, TxMargin1, clr, clr, nil, cols, hh, rows, 0)
+
 	w := WAccounts{
 		db:   db,
 		rect: rect,
-		tbl:  nil,
+		tbl:  tbl,
 	}
 	return &w
 }

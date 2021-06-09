@@ -64,8 +64,7 @@ func run(args []string) error {
    `, dbfile)
 	}
 
-	//db, err := sql.Open("sqlite3", dbfile)
-	_, err = sql.Open("sqlite3", dbfile)
+	db, err := sql.Open("sqlite3", dbfile)
 	if err != nil {
 		return fmt.Errorf("Error opening '%s' (%s)\n", dbfile, err)
 	}
@@ -80,36 +79,17 @@ func run(args []string) error {
 
 	_termW, _termH = tb.Size()
 
-	white := tb.Attribute(16)
-	black := tb.Attribute(17)
-	darkolivegreen := tb.Attribute(156)
+	//white := tb.Attribute(16)
+	//black := tb.Attribute(17)
+	//darkolivegreen := tb.Attribute(156)
 	//darkorange := tb.Attribute(167)
-	grey39 := tb.Attribute(242)
+	//grey39 := tb.Attribute(242)
 	//plum1 := tb.Attribute(220)
 	//gold1 := tb.Attribute(221)
 
-	clr1 := TxColor{
-		Fg:          darkolivegreen,
-		Bg:          black,
-		HighlightFg: grey39,
-		HighlightBg: white,
-	}
-	r := TxRect{5, 5, 80, 30}
-	cols := []TxCellSetting{
-		{"%s", 0, 40, clr1, 0},
-		{"%12.2f", 20, 12, clr1, 0},
-		{"%12.2f", 32, 12, clr1, 0},
-	}
-	hh := []string{"Desc", "Deposit", "Withdraw"}
-	rows := []TxTableRow{
-		TxTableRow{"initial bal", 1.2345, nil},
-		TxTableRow{"deposit paycheck", 56123.789, nil},
-		TxTableRow{"withdraw", nil, 2000.0},
-		TxTableRow{"transfer to savings account", nil, 11234.56},
-		TxTableRow{"buy 5 shares AAPL", 897.12345, nil},
-	}
-	tbl := NewTxTable(r, TxMargin0, clr1, clr1, nil, cols, hh, rows, 0)
-	tbl.Draw()
+	r := TxRect{0, 0, 80, 25}
+	waccounts := NewWAccounts(db, r, TxColorBW)
+	waccounts.Draw()
 	tb.Flush()
 
 	chev := make(chan tb.Event)
@@ -121,8 +101,8 @@ func run(args []string) error {
 		if e.Ch == 'q' {
 			break
 		}
-		if tbl.HandleEvent(e) {
-			tbl.Draw()
+		if waccounts.HandleEvent(e) {
+			waccounts.Draw()
 			tb.Flush()
 		}
 	}

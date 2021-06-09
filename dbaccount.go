@@ -77,3 +77,14 @@ func findAccounts(db *sql.DB, swhere string) ([]*Account, error) {
 	}
 	return aa, nil
 }
+
+func balAccount(db *sql.DB, accountid int64) float64 {
+	s := "SELECT IFNULL(SUM(amt), 0.0) FROM trans WHERE account_id = ?"
+	row := db.QueryRow(s, accountid)
+	var bal float64
+	err := row.Scan(&bal)
+	if err != nil {
+		return 0.0
+	}
+	return bal
+}
