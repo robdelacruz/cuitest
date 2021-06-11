@@ -24,7 +24,7 @@ func NewWAccounts(db *sql.DB, rect TxRect, clr TxColor) *WAccounts {
 
 	cols := []TxCellSetting{
 		{"%s", 0, 40, TxColorBW, 0},
-		{"%12.2f", 40, 12, TxColorBW, 0},
+		{"%7.2f", 40, 12, TxColorBW, 0},
 	}
 	hh := []string{"Name", "Balance"}
 	var rows []TxTableRow
@@ -53,8 +53,21 @@ func (w *WAccounts) HandleEvent(e tb.Event) bool {
 	if e.Type != tb.EventKey {
 		return false
 	}
-	if e.Ch != 0 {
-		return false
+	if e.Ch == 0 {
+		switch e.Key {
+		case tb.KeyEnter: // edit
+			_log.Printf("edit\n")
+		case tb.KeyCtrlX: // del
+			_log.Printf("del\n")
+		}
+		return w.tbl.HandleEvent(e)
+	}
+
+	switch e.Ch {
+	case 'a': // add
+		_log.Printf("add\n")
+	case 'e': // edit
+		_log.Printf("edit\n")
 	}
 	return w.tbl.HandleEvent(e)
 }
