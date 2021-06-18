@@ -80,20 +80,12 @@ func run(args []string) error {
 
 	_termW, _termH = tb.Size()
 
-	//white := tb.Attribute(16)
-	//black := tb.Attribute(17)
-	//darkolivegreen := tb.Attribute(156)
-	//darkorange := tb.Attribute(167)
-	//grey39 := tb.Attribute(242)
-	//plum1 := tb.Attribute(220)
-	//gold1 := tb.Attribute(221)
-
 	//r := TxRect{0, 0, 80, 25}
 	//waccounts := NewWAccounts(db, r, TxColorBW)
 	//waccounts.Draw()
 
 	r := TxRect{5, 5, 40, 1}
-	entry := NewTxEntry(r, TxMargin0, TxColorBW, nil, "", 0)
+	entry := NewTxLabelEntry(r, TxMargin0, TxColorGreen, TxColorWhite, nil, "Enter Name", "", 0)
 	entry.Draw()
 
 	tb.Flush()

@@ -59,7 +59,17 @@ type TxColor struct {
 	HighlightFg, HighlightBg tb.Attribute
 }
 
+var TxWhite = tb.Attribute(16)
+var TxBlack = tb.Attribute(17)
+var TxDarkolivegreen = tb.Attribute(156)
+var TxDarkorange = tb.Attribute(167)
+var TxGrey39 = tb.Attribute(242)
+var TxPlum1 = tb.Attribute(220)
+var TxGold1 = tb.Attribute(221)
+
 var TxColorBW = TxColor{tb.ColorWhite, tb.ColorBlack, tb.ColorBlack, tb.ColorWhite}
+var TxColorWhite = TxColor{TxWhite, TxBlack, TxBlack, TxWhite}
+var TxColorGreen = TxColor{TxDarkolivegreen, TxBlack, TxBlack, TxDarkolivegreen}
 
 type TxItem struct {
 	Id      int
