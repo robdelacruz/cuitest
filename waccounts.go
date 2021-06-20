@@ -8,45 +8,65 @@ import (
 )
 
 type WAccounts struct {
-	db   *sql.DB
-	rect TxRect
-	clr  TxColor
-	tbl  *TxTable
+	db            *sql.DB
+	Rect          TxRect
+	Clr           TxColor
+	Cb            TxEventCB
+	tblAccounts   *TxTable
+	tblSelAccount *TxTable
 }
 
-func NewWAccounts(db *sql.DB, rect TxRect, clr TxColor) *WAccounts {
+const (
+	List int = iota
+	ItemView
+	ItemEdit
+)
+
+func NewWAccounts(db *sql.DB, rect TxRect, clr TxColor, cb TxEventCB) *WAccounts {
 	initColor(&clr)
 
-	aa, err := findAccounts(db, " 1=1 ORDER BY accounttype, name")
-	if err != nil {
-		aa = []*Account{}
+	w := WAccounts{
+		db:   db,
+		Rect: rect,
+		Clr:  clr,
+		Cb:   cb,
 	}
+	r := TxRect{0, 0, rect.W, rect.H}
+	tblAccounts := createAccountsTable(db, r, clr, w.onAccountsEvent)
 
+	w.tblAccounts = tblAccounts
+	w.tblSelAccount = nil
+	return &w
+}
+
+func createAccountsTable(db *sql.DB, r TxRect, clr TxColor, cb TxEventCB) *TxTable {
 	cols := []*TxCellSetting{
 		{"%s", 0, 40, TxColorBW, 0},
 		{"%7.2f", 40, 12, TxColorBW, 0},
 	}
 	hh := []string{"Name", "Balance"}
+	rows := queryAccountRows(db)
+	return NewTxTable(r, TxMargin1, clr, clr, cb, cols, hh, rows, 0)
+}
+
+func queryAccountRows(db *sql.DB) []*TxTableRow {
+	aa, err := findAccounts(db, " 1=1 ORDER BY accounttype, name")
+	if err != nil {
+		aa = []*Account{}
+	}
+
 	var rows []*TxTableRow
 	for _, a := range aa {
 		bal := balAccount(db, a.Accountid)
 		cells := []TxCell{a.Name, bal}
 		rows = append(rows, &TxTableRow{a.Accountid, a.Code, cells})
 	}
-	r := TxRect{0, 0, rect.W, rect.H}
-	tbl := NewTxTable(r, TxMargin1, clr, clr, nil, cols, hh, rows, 0)
-
-	w := WAccounts{
-		db:   db,
-		rect: rect,
-		tbl:  tbl,
-	}
-	return &w
+	return rows
 }
 
 func (w *WAccounts) Draw() {
-	clearRect(w.rect, w.clr.Bg)
-	w.tbl.Draw()
+	clearRect(w.Rect, w.Clr.Bg)
+	w.tblAccounts.Draw()
 	tb.Flush()
 }
 
@@ -56,19 +76,24 @@ func (w *WAccounts) HandleEvent(e tb.Event) bool {
 	}
 	if e.Ch == 0 {
 		switch e.Key {
-		case tb.KeyEnter: // edit
-			_log.Printf("edit\n")
-		case tb.KeyCtrlX: // del
-			_log.Printf("del\n")
+		case tb.KeyEnter: // view
+			_log.Printf("view\n")
 		}
-		return w.tbl.HandleEvent(e)
+		return w.tblAccounts.HandleEvent(e)
 	}
 
 	switch e.Ch {
 	case 'a': // add
 		_log.Printf("add\n")
-	case 'e': // edit
-		_log.Printf("edit\n")
 	}
-	return w.tbl.HandleEvent(e)
+	return w.tblAccounts.HandleEvent(e)
+}
+
+func (w *WAccounts) onAccountsEvent(we *TxEvent) {
+	switch we.Code {
+	case TxEventEnter:
+		_log.Printf("account enter, id: %d, alias: %s, display: %s\n", we.Item.Id, we.Item.Alias, we.Item.Display)
+	case TxEventEsc:
+	case TxEventSel:
+	}
 }

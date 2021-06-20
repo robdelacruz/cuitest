@@ -254,3 +254,15 @@ func (w *TxTable) postSelItemEvent() {
 	}
 	w.Cb(&we)
 }
+
+func (w *TxTable) SetRows(rows []*TxTableRow) {
+	w.Rows = rows
+
+	// Make sure selected row and scroll position is still in range.
+	if w.Sel > len(w.Rows)-1 {
+		w.Sel = len(w.Rows) - 1
+	}
+	if w.Scrollpos > len(w.Rows)-1 {
+		w.Scrollpos = len(w.Rows) - 1
+	}
+}

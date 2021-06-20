@@ -80,7 +80,7 @@ func run(args []string) error {
 	_termW, _termH = tb.Size()
 
 	r := TxRect{0, 0, 80, 25}
-	waccounts := NewWAccounts(db, r, TxColorBW)
+	waccounts := NewWAccounts(db, r, TxColorBW, nil)
 	waccounts.Draw()
 
 	//r := TxRect{5, 5, 40, 1}
