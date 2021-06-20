@@ -1,20 +1,24 @@
 package main
 
 import (
+	"regexp"
+	"strings"
+
 	tb "github.com/nsf/termbox-go"
 )
 
 type TxEntry struct {
-	Rect     TxRect
-	Margin   TxMargin
-	Color    TxColor
-	Cb       TxEventCB
-	Text     string
-	Settings TxSetting
-	Cur      TxPos
+	Rect         TxRect
+	Margin       TxMargin
+	Color        TxColor
+	Cb           TxEventCB
+	Text         string
+	ValidatorReg *regexp.Regexp
+	Settings     TxSetting
+	Cur          TxPos
 }
 
-func NewTxEntry(rect TxRect, margin TxMargin, color TxColor, cb TxEventCB, text string, settings TxSetting) *TxEntry {
+func NewTxEntry(rect TxRect, margin TxMargin, color TxColor, cb TxEventCB, text string, svalidator string, settings TxSetting) *TxEntry {
 	if rect.H == 0 {
 		rect.H = 1
 	}
@@ -24,14 +28,34 @@ func NewTxEntry(rect TxRect, margin TxMargin, color TxColor, cb TxEventCB, text 
 
 	initColor(&color)
 
+	var validatorReg *regexp.Regexp
+	if svalidator != "" {
+		if !strings.HasPrefix(svalidator, "^") {
+			svalidator = "^" + svalidator
+		}
+		if !strings.HasSuffix(svalidator, "$") {
+			svalidator = svalidator + "$"
+		}
+
+		var err error
+		validatorReg, err = regexp.Compile(svalidator)
+		if err != nil {
+			validatorReg = nil
+		}
+	}
+
 	w := TxEntry{
-		Rect:     rect,
-		Margin:   margin,
-		Color:    color,
-		Cb:       cb,
-		Text:     text,
-		Settings: settings,
-		Cur:      TxPos{0, 0},
+		Rect:         rect,
+		Margin:       margin,
+		Color:        color,
+		Cb:           cb,
+		Text:         "",
+		ValidatorReg: validatorReg,
+		Settings:     settings,
+		Cur:          TxPos{0, 0},
+	}
+	if text != "" {
+		w.SetText(text)
 	}
 	return &w
 }
@@ -60,15 +84,17 @@ func (w *TxEntry) HandleEvent(e tb.Event) bool {
 		return false
 	}
 	if e.Ch != 0 {
-		w.InsertChar(e.Ch, w.Cur.X)
-		w.Cur.X++
+		if w.InsertChar(e.Ch, w.Cur.X) {
+			w.Cur.X++
+		}
 		return true
 	}
 
 	switch e.Key {
 	case tb.KeySpace:
-		w.InsertChar(' ', w.Cur.X)
-		w.Cur.X++
+		if w.InsertChar(' ', w.Cur.X) {
+			w.Cur.X++
+		}
 		return true
 	case tb.KeyEsc:
 		if w.Cb != nil {
@@ -119,14 +145,21 @@ func (w *TxEntry) adjustCur() {
 	}
 }
 
-func (w *TxEntry) InsertChar(r rune, x int) {
+func (w *TxEntry) InsertChar(r rune, x int) bool {
+	var newText string
 	if x > len(w.Text)-1 {
-		w.Text += string(r)
+		newText = w.Text + string(r)
 	} else {
-		w.Text = w.Text[:x] + string(r) + w.Text[x:]
+		newText = w.Text[:x] + string(r) + w.Text[x:]
 	}
+
+	return w.SetText(newText)
 }
 
-func (w *TxEntry) SetText(text string) {
-	w.Text = text
+func (w *TxEntry) SetText(text string) bool {
+	if w.ValidatorReg == nil || w.ValidatorReg.MatchString(text) {
+		w.Text = text
+		return true
+	}
+	return false
 }

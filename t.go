@@ -85,7 +85,8 @@ func run(args []string) error {
 	//waccounts.Draw()
 
 	r := TxRect{5, 5, 40, 1}
-	entry := NewTxLabelEntry(r, TxMargin0, TxColorGreen, TxColorWhite, nil, "Enter Name", "", 0)
+	entry := NewTxLabelEntry(r, TxMargin0, TxColorGreen, TxColorWhite, nil, "Enter Name", "", "[A-Z]+", 0)
+	//entry := NewTxEntry(r, TxMargin0, TxColorWhite, nil, "Enter Name", "[A-Z]+", 0)
 	entry.Draw()
 
 	tb.Flush()

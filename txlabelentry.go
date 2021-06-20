@@ -5,18 +5,15 @@ import (
 )
 
 type TxLabelEntry struct {
-	Rect       TxRect
-	Margin     TxMargin
-	LabelColor TxColor
-	Color      TxColor
-	Cb         TxEventCB
-	LabelText  string
-	Text       string
-	Settings   TxSetting
-	Cur        TxPos
+	Rect     TxRect
+	Margin   TxMargin
+	Color    TxColor
+	Settings TxSetting
+	label    *TxLabel
+	entry    *TxEntry
 }
 
-func NewTxLabelEntry(rect TxRect, margin TxMargin, labelcolor, color TxColor, cb TxEventCB, labeltext, text string, settings TxSetting) *TxLabelEntry {
+func NewTxLabelEntry(rect TxRect, margin TxMargin, labelcolor, color TxColor, cb TxEventCB, labeltext, text string, svalidator string, settings TxSetting) *TxLabelEntry {
 	if rect.H < 2 {
 		rect.H = 2
 	}
@@ -27,16 +24,19 @@ func NewTxLabelEntry(rect TxRect, margin TxMargin, labelcolor, color TxColor, cb
 	initColor(&labelcolor)
 	initColor(&color)
 
+	rectmargin := addRectMargin(rect, margin)
+	rectlabel := TxRect{rectmargin.X, rectmargin.Y, rectmargin.W, rectmargin.H}
+	rectentry := TxRect{rectmargin.X, rectmargin.Y + 1, rectmargin.W, rectmargin.H}
+	label := NewTxLabel(rectlabel, TxMargin0, labelcolor, labeltext, settings)
+	entry := NewTxEntry(rectentry, TxMargin0, color, cb, text, svalidator, settings)
+
 	w := TxLabelEntry{
-		Rect:       rect,
-		Margin:     margin,
-		LabelColor: labelcolor,
-		Color:      color,
-		Cb:         cb,
-		LabelText:  labeltext,
-		Text:       text,
-		Settings:   settings,
-		Cur:        TxPos{0, 0},
+		Rect:     rect,
+		Margin:   margin,
+		Color:    color,
+		Settings: settings,
+		label:    label,
+		entry:    entry,
 	}
 	return &w
 }
@@ -49,92 +49,14 @@ func (w *TxLabelEntry) Draw() {
 		drawBox(boxRect, w.Color.Fg, w.Color.Bg)
 	}
 
-	rect := addRectMargin(w.Rect, w.Margin)
-	y := rect.Y
-	printw(w.LabelText, rect.X, y, w.LabelColor.Fg, w.LabelColor.Bg, rect.W)
-	y++
-	printw(w.Text, rect.X, y, w.Color.Fg, w.Color.Bg, rect.W)
-
-	// Print cursor
-	curCh := ' '
-	if w.Cur.X <= len(w.Text)-1 {
-		curCh = rune(w.Text[w.Cur.X])
-	}
-	tb.SetCell(rect.X+w.Cur.X, y, curCh, w.Color.HighlightFg, w.Color.HighlightBg)
+	w.label.Draw()
+	w.entry.Draw()
 }
 
 func (w *TxLabelEntry) HandleEvent(e tb.Event) bool {
-	if e.Type != tb.EventKey {
-		return false
-	}
-	if e.Ch != 0 {
-		w.InsertChar(e.Ch, w.Cur.X)
-		w.Cur.X++
-		return true
-	}
-
-	switch e.Key {
-	case tb.KeySpace:
-		w.InsertChar(' ', w.Cur.X)
-		w.Cur.X++
-		return true
-	case tb.KeyEsc:
-		if w.Cb != nil {
-			we := TxEvent{
-				Code: TxEventEsc,
-			}
-			w.Cb(&we)
-		}
-		return true
-	case tb.KeyArrowLeft:
-		w.Cur.X--
-		w.adjustCur()
-		return true
-	case tb.KeyArrowRight:
-		w.Cur.X++
-		w.adjustCur()
-		return true
-	case tb.KeyCtrlA:
-		w.Cur.X = 0
-		w.adjustCur()
-		return true
-	case tb.KeyCtrlE:
-		w.Cur.X = len(w.Text)
-		w.adjustCur()
-		return true
-	case tb.KeyBackspace:
-		fallthrough
-	case tb.KeyBackspace2:
-		if w.Cur.X > 0 {
-			w.Cur.X--
-			w.Text = w.Text[:w.Cur.X] + w.Text[w.Cur.X+1:]
-		}
-		return true
-	case tb.KeyDelete:
-		if w.Cur.X <= len(w.Text)-1 {
-			w.Text = w.Text[:w.Cur.X] + w.Text[w.Cur.X+1:]
-		}
-		return true
-	}
-	return false
+	return w.entry.HandleEvent(e)
 }
 
-func (w *TxLabelEntry) adjustCur() {
-	if w.Cur.X < 0 {
-		w.Cur.X = 0
-	} else if w.Cur.X > len(w.Text) {
-		w.Cur.X = len(w.Text)
-	}
-}
-
-func (w *TxLabelEntry) InsertChar(r rune, x int) {
-	if x > len(w.Text)-1 {
-		w.Text += string(r)
-	} else {
-		w.Text = w.Text[:x] + string(r) + w.Text[x:]
-	}
-}
-
-func (w *TxLabelEntry) SetText(text string) {
-	w.Text = text
+func (w *TxLabelEntry) SetText(text string) bool {
+	return w.entry.SetText(text)
 }
