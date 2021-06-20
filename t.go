@@ -64,8 +64,7 @@ func run(args []string) error {
    `, dbfile)
 	}
 
-	//db, err := sql.Open("sqlite3", dbfile)
-	_, err = sql.Open("sqlite3", dbfile)
+	db, err := sql.Open("sqlite3", dbfile)
 	if err != nil {
 		return fmt.Errorf("Error opening '%s' (%s)\n", dbfile, err)
 	}
@@ -80,14 +79,14 @@ func run(args []string) error {
 
 	_termW, _termH = tb.Size()
 
-	//r := TxRect{0, 0, 80, 25}
-	//waccounts := NewWAccounts(db, r, TxColorBW)
-	//waccounts.Draw()
+	r := TxRect{0, 0, 80, 25}
+	waccounts := NewWAccounts(db, r, TxColorBW)
+	waccounts.Draw()
 
-	r := TxRect{5, 5, 40, 1}
-	entry := NewTxLabelEntry(r, TxMargin0, TxColorGreen, TxColorWhite, nil, "Enter Name", "", "[A-Z]+", 0)
+	//r := TxRect{5, 5, 40, 1}
+	//entry := NewTxLabelEntry(r, TxMargin0, TxColorGreen, TxColorWhite, nil, "Enter Name", "", "[A-Z]+", 0)
 	//entry := NewTxEntry(r, TxMargin0, TxColorWhite, nil, "Enter Name", "[A-Z]+", 0)
-	entry.Draw()
+	//entry.Draw()
 
 	tb.Flush()
 
@@ -100,8 +99,8 @@ func run(args []string) error {
 		if e.Ch == 'q' {
 			break
 		}
-		if entry.HandleEvent(e) {
-			entry.Draw()
+		if waccounts.HandleEvent(e) {
+			waccounts.Draw()
 			tb.Flush()
 		}
 	}

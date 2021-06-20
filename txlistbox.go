@@ -109,22 +109,26 @@ func (w *TxListbox) HandleEvent(e tb.Event) bool {
 		w.postSelItemEvent()
 		return true
 	case tb.KeyEnter:
-		if w.Cb != nil {
-			we := TxEvent{
-				Code: TxEventEnter,
-				P1:   w.Sel,
-				Item: w.Items[w.Sel],
-			}
-			w.Cb(&we)
+		if w.Cb == nil {
+			return true
 		}
+		if len(w.Items) == 0 || w.Sel > len(w.Items)-1 {
+			return true
+		}
+		we := TxEvent{
+			Code: TxEventEnter,
+			Item: w.Items[w.Sel],
+		}
+		w.Cb(&we)
 		return true
 	case tb.KeyEsc:
-		if w.Cb != nil {
-			we := TxEvent{
-				Code: TxEventEsc,
-			}
-			w.Cb(&we)
+		if w.Cb == nil {
+			return true
 		}
+		we := TxEvent{
+			Code: TxEventEsc,
+		}
+		w.Cb(&we)
 		return true
 	}
 	return false
@@ -148,24 +152,23 @@ func (w *TxListbox) adjustScroll() {
 	}
 }
 
-func (w *TxListbox) SelItem() (int, *TxItem) {
-	if len(w.Items) == 0 {
-		return -1, nil
+func (w *TxListbox) SelItem() *TxItem {
+	if len(w.Items) == 0 || w.Sel > len(w.Items)-1 {
+		return nil
 	}
-	return w.Sel, w.Items[w.Sel]
+	return w.Items[w.Sel]
 }
 
 func (w *TxListbox) postSelItemEvent() {
-	if len(w.Items) == 0 {
+	if w.Cb == nil {
 		return
 	}
-
-	if w.Cb != nil {
-		we := TxEvent{
-			Code: TxEventSel,
-			P1:   w.Sel,
-			Item: w.Items[w.Sel],
-		}
-		w.Cb(&we)
+	if len(w.Items) == 0 || w.Sel > len(w.Items)-1 {
+		return
 	}
+	we := TxEvent{
+		Code: TxEventSel,
+		Item: w.Items[w.Sel],
+	}
+	w.Cb(&we)
 }

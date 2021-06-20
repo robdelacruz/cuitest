@@ -115,22 +115,26 @@ func (w *TxMenu) HandleEvent(e tb.Event) bool {
 		w.adjustScroll()
 		return true
 	case tb.KeyEnter:
-		if w.Cb != nil {
-			we := TxEvent{
-				Code: TxEventEnter,
-				P1:   w.Sel,
-				Item: w.Items[w.Sel],
-			}
-			w.Cb(&we)
+		if w.Cb == nil {
+			return true
 		}
+		if len(w.Items) == 0 || w.Sel > len(w.Items)-1 {
+			return true
+		}
+		we := TxEvent{
+			Code: TxEventEnter,
+			Item: w.Items[w.Sel],
+		}
+		w.Cb(&we)
 		return true
 	case tb.KeyEsc:
-		if w.Cb != nil {
-			we := TxEvent{
-				Code: TxEventEsc,
-			}
-			w.Cb(&we)
+		if w.Cb == nil {
+			return true
 		}
+		we := TxEvent{
+			Code: TxEventEsc,
+		}
+		w.Cb(&we)
 		return true
 	}
 	return false

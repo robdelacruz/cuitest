@@ -12,7 +12,13 @@ type TxCellSetting struct {
 	Settings TxSetting
 }
 
-type TxTableRow []interface{}
+type TxCell interface{}
+
+type TxTableRow struct {
+	Id    int64
+	Alias string
+	Cells []TxCell
+}
 
 type TxTable struct {
 	Rect         TxRect
@@ -20,15 +26,15 @@ type TxTable struct {
 	Color        TxColor
 	ColorHeading TxColor
 	Cb           TxEventCB
-	Cols         []TxCellSetting
+	Cols         []*TxCellSetting
 	Headings     []string
-	Rows         []TxTableRow
+	Rows         []*TxTableRow
 	Settings     TxSetting
 	Sel          int
 	Scrollpos    int
 }
 
-func NewTxTable(rect TxRect, margin TxMargin, color TxColor, colorHeading TxColor, cb TxEventCB, cols []TxCellSetting, headings []string, rows []TxTableRow, settings TxSetting) *TxTable {
+func NewTxTable(rect TxRect, margin TxMargin, color TxColor, colorHeading TxColor, cb TxEventCB, cols []*TxCellSetting, headings []string, rows []*TxTableRow, settings TxSetting) *TxTable {
 	// If not specified, automatically set width and height based on column settings.
 	if rect.H == 0 {
 		rect.H = len(rows) + margin.T + margin.B
@@ -110,7 +116,7 @@ func (w *TxTable) Draw() {
 		}
 
 		row := w.Rows[irow]
-		for icol, cell := range row {
+		for icol, cell := range row.Cells {
 			if cell == nil {
 				continue
 			}
@@ -166,7 +172,7 @@ func (w *TxTable) HandleEvent(e tb.Event) bool {
 			w.Sel = len(w.Rows) - 1
 		}
 		w.adjustScroll()
-		w.postSelRowEvent()
+		w.postSelItemEvent()
 		return true
 	case tb.KeyArrowDown:
 		w.Sel++
@@ -174,24 +180,30 @@ func (w *TxTable) HandleEvent(e tb.Event) bool {
 			w.Sel = 0
 		}
 		w.adjustScroll()
-		w.postSelRowEvent()
+		w.postSelItemEvent()
 		return true
 	case tb.KeyEnter:
-		if w.Cb != nil {
-			we := TxEvent{
-				Code: TxEventEnter,
-				P1:   w.Sel,
-			}
-			w.Cb(&we)
+		if w.Cb == nil {
+			return true
 		}
+		item := w.SelItem()
+		if item == nil {
+			return true
+		}
+		we := TxEvent{
+			Code: TxEventEnter,
+			Item: item,
+		}
+		w.Cb(&we)
 		return true
 	case tb.KeyEsc:
-		if w.Cb != nil {
-			we := TxEvent{
-				Code: TxEventEsc,
-			}
-			w.Cb(&we)
+		if w.Cb == nil {
+			return true
 		}
+		we := TxEvent{
+			Code: TxEventEsc,
+		}
+		w.Cb(&we)
 		return true
 	}
 	return false
@@ -219,23 +231,26 @@ func (w *TxTable) adjustScroll() {
 	}
 }
 
-func (w *TxTable) SelItem() (int, []interface{}) {
-	if len(w.Rows) == 0 {
-		return -1, nil
+func (w *TxTable) SelItem() *TxItem {
+	if len(w.Rows) == 0 || w.Sel > len(w.Rows)-1 {
+		return nil
 	}
-	return w.Sel, w.Rows[w.Sel]
+	row := w.Rows[w.Sel]
+	item := &TxItem{row.Id, row.Alias, ""}
+	return item
 }
 
-func (w *TxTable) postSelRowEvent() {
-	if len(w.Rows) == 0 {
+func (w *TxTable) postSelItemEvent() {
+	if w.Cb == nil {
 		return
 	}
-
-	if w.Cb != nil {
-		we := TxEvent{
-			Code: TxEventSel,
-			P1:   w.Sel,
-		}
-		w.Cb(&we)
+	item := w.SelItem()
+	if item == nil {
+		return
 	}
+	we := TxEvent{
+		Code: TxEventSel,
+		Item: item,
+	}
+	w.Cb(&we)
 }

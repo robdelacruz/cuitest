@@ -22,15 +22,16 @@ func NewWAccounts(db *sql.DB, rect TxRect, clr TxColor) *WAccounts {
 		aa = []*Account{}
 	}
 
-	cols := []TxCellSetting{
+	cols := []*TxCellSetting{
 		{"%s", 0, 40, TxColorBW, 0},
 		{"%7.2f", 40, 12, TxColorBW, 0},
 	}
 	hh := []string{"Name", "Balance"}
-	var rows []TxTableRow
+	var rows []*TxTableRow
 	for _, a := range aa {
 		bal := balAccount(db, a.Accountid)
-		rows = append(rows, TxTableRow{a.Name, bal})
+		cells := []TxCell{a.Name, bal}
+		rows = append(rows, &TxTableRow{a.Accountid, a.Code, cells})
 	}
 	r := TxRect{0, 0, rect.W, rect.H}
 	tbl := NewTxTable(r, TxMargin1, clr, clr, nil, cols, hh, rows, 0)

@@ -38,10 +38,6 @@ const (
 type TxEvent struct {
 	Code   TxEventCode
 	Item   *TxItem
-	P1     int
-	P2     int
-	Pnum   float32
-	Pstr   string
 	Detail interface{}
 }
 type TxEventCB func(we *TxEvent)
@@ -72,8 +68,8 @@ var TxColorWhite = TxColor{TxWhite, TxBlack, TxBlack, TxWhite}
 var TxColorGreen = TxColor{TxDarkolivegreen, TxBlack, TxBlack, TxDarkolivegreen}
 
 type TxItem struct {
-	Id      int
-	Sid     string
+	Id      int64
+	Alias   string
 	Display string
 }
 
