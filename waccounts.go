@@ -40,13 +40,14 @@ func NewWAccounts(db *sql.DB, rect TxRect, clr TxColor, cb TxEventCB) *WAccounts
 }
 
 func createAccountsTable(db *sql.DB, r TxRect, clr TxColor, cb TxEventCB) *TxTable {
+	props := &TxProps{r, TxMargin1, clr, cb, 0}
 	cols := []*TxCellSetting{
-		{"%s", 0, 40, TxColorBW, 0},
-		{"%7.2f", 40, 12, TxColorBW, 0},
+		{"%s", 0, 40, clr, 0},
+		{"%7.2f", 40, 12, clr, 0},
 	}
 	hh := []string{"Name", "Balance"}
 	rows := queryAccountRows(db)
-	return NewTxTable(r, TxMargin1, clr, clr, cb, cols, hh, rows, 0)
+	return NewTxTable(props, clr, cols, hh, rows)
 }
 
 func queryAccountRows(db *sql.DB) []*TxTableRow {

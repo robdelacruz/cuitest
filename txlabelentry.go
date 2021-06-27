@@ -5,48 +5,50 @@ import (
 )
 
 type TxLabelEntry struct {
-	Rect     TxRect
-	Margin   TxMargin
-	Color    TxColor
-	Settings TxSetting
-	label    *TxLabel
-	entry    *TxEntry
+	Props *TxProps
+	label *TxLabel
+	entry *TxEntry
 }
 
-func NewTxLabelEntry(rect TxRect, margin TxMargin, labelcolor, color TxColor, cb TxEventCB, labeltext, text string, svalidator string, settings TxSetting) *TxLabelEntry {
-	if rect.H < 2 {
-		rect.H = 2
-	}
-	if rect.W == 0 {
-		rect.W = 10
+func NewTxLabelEntry(props *TxProps, labelclr, entryclr TxColor, labeltext, entrytext string, svalidator string) *TxLabelEntry {
+	if props == nil {
+		props = defaultProps()
 	}
 
-	initColor(&labelcolor)
-	initColor(&color)
+	if props.Rect.H < 2 {
+		props.Rect.H = 2
+	}
+	if props.Rect.W == 0 {
+		props.Rect.W = 10
+	}
 
-	rectmargin := addRectMargin(rect, margin)
-	rectlabel := TxRect{rectmargin.X, rectmargin.Y, rectmargin.W, rectmargin.H}
-	rectentry := TxRect{rectmargin.X, rectmargin.Y + 1, rectmargin.W, rectmargin.H}
-	label := NewTxLabel(rectlabel, TxMargin0, labelcolor, labeltext, settings)
-	entry := NewTxEntry(rectentry, TxMargin0, color, cb, text, svalidator, settings)
+	initColor(&labelclr)
+	initColor(&entryclr)
+
+	rectmargin := addRectMargin(props.Rect, props.Margin)
+	labelrect := TxRect{rectmargin.X, rectmargin.Y, rectmargin.W, rectmargin.H}
+	labelprops := &TxProps{labelrect, TxMargin0, labelclr, nil, 0}
+	label := NewTxLabel(labelprops, labeltext)
+
+	entryrect := TxRect{rectmargin.X, rectmargin.Y + 1, rectmargin.W, rectmargin.H}
+	entryprops := &TxProps{entryrect, TxMargin0, entryclr, props.EventCB, props.Fmt}
+	entry := NewTxEntry(entryprops, entrytext, svalidator)
 
 	w := TxLabelEntry{
-		Rect:     rect,
-		Margin:   margin,
-		Color:    color,
-		Settings: settings,
-		label:    label,
-		entry:    entry,
+		Props: props,
+		label: label,
+		entry: entry,
 	}
 	return &w
 }
 
 func (w *TxLabelEntry) Draw() {
-	clearRect(w.Rect, w.Color.Bg)
+	p := w.Props
+	clearRect(p.Rect, p.Clr.Bg)
 
-	if w.Settings&TxFmtBox != 0 {
-		boxRect := addRectBox(w.Rect)
-		drawBox(boxRect, w.Color.Fg, w.Color.Bg)
+	if p.Fmt&TxFmtBox != 0 {
+		boxRect := addRectBox(p.Rect)
+		drawBox(boxRect, p.Clr.Fg, p.Clr.Bg)
 	}
 
 	w.label.Draw()

@@ -17,6 +17,8 @@ type TxMargin struct {
 	T, B, L, R int
 }
 
+var TxRect0 = TxRect{}
+
 var TxMargin0 = TxMargin{0, 0, 0, 0}
 var TxMargin1 = TxMargin{1, 1, 1, 1}
 var TxMarginX = TxMargin{0, 0, 1, 1}
@@ -42,10 +44,10 @@ type TxEvent struct {
 }
 type TxEventCB func(we *TxEvent)
 
-type TxSetting uint64
+type TxFmt uint64
 
 const (
-	TxFmtNormal TxSetting = 1 << iota
+	TxFmtNormal TxFmt = 1 << iota
 	TxFmtCenter
 	TxFmtBox
 )
@@ -63,14 +65,34 @@ var TxGrey39 = tb.Attribute(242)
 var TxPlum1 = tb.Attribute(220)
 var TxGold1 = tb.Attribute(221)
 
-var TxColorBW = TxColor{tb.ColorWhite, tb.ColorBlack, tb.ColorBlack, tb.ColorWhite}
+var TxColorBWTerm = TxColor{tb.ColorWhite, tb.ColorBlack, tb.ColorBlack, tb.ColorWhite}
 var TxColorWhite = TxColor{TxWhite, TxBlack, TxBlack, TxWhite}
+var TxColorBlack = TxColor{TxBlack, TxWhite, TxWhite, TxBlack}
 var TxColorGreen = TxColor{TxDarkolivegreen, TxBlack, TxBlack, TxDarkolivegreen}
 
 type TxItem struct {
 	Id      int64
 	Alias   string
 	Display string
+}
+
+type TxProps struct {
+	Rect    TxRect
+	Margin  TxMargin
+	Clr     TxColor
+	EventCB TxEventCB
+	Fmt     TxFmt
+}
+
+func defaultProps() *TxProps {
+	props := &TxProps{
+		Rect:    TxRect0,
+		Margin:  TxMargin0,
+		Clr:     TxColorWhite,
+		EventCB: nil,
+		Fmt:     TxFmtNormal,
+	}
+	return props
 }
 
 func initColor(color *TxColor) {

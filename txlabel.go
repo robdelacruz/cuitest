@@ -5,43 +5,42 @@ import (
 )
 
 type TxLabel struct {
-	Rect     TxRect
-	Margin   TxMargin
-	Color    TxColor
-	Text     string
-	Settings TxSetting
+	Props *TxProps
+	Text  string
 }
 
-func NewTxLabel(rect TxRect, margin TxMargin, color TxColor, text string, settings TxSetting) *TxLabel {
-	if rect.H == 0 {
-		rect.H = 1
-	}
-	if rect.W == 0 {
-		rect.W = 10
+func NewTxLabel(props *TxProps, text string) *TxLabel {
+	if props == nil {
+		props = defaultProps()
 	}
 
-	initColor(&color)
+	if props.Rect.H == 0 {
+		props.Rect.H = 1
+	}
+	if props.Rect.W == 0 {
+		props.Rect.W = 10
+	}
+
+	initColor(&props.Clr)
 
 	w := TxLabel{
-		Rect:     rect,
-		Margin:   margin,
-		Color:    color,
-		Text:     text,
-		Settings: settings,
+		Props: props,
+		Text:  text,
 	}
 	return &w
 }
 
 func (w *TxLabel) Draw() {
-	clearRect(w.Rect, w.Color.Bg)
+	p := w.Props
+	clearRect(p.Rect, p.Clr.Bg)
 
-	if w.Settings&TxFmtBox != 0 {
-		boxRect := addRectBox(w.Rect)
-		drawBox(boxRect, w.Color.Fg, w.Color.Bg)
+	if p.Fmt&TxFmtBox != 0 {
+		boxRect := addRectBox(p.Rect)
+		drawBox(boxRect, p.Clr.Fg, p.Clr.Bg)
 	}
 
-	rect := addRectMargin(w.Rect, w.Margin)
-	printRect(w.Text, rect, w.Color.Fg, w.Color.Bg)
+	rect := addRectMargin(p.Rect, p.Margin)
+	printRect(w.Text, rect, p.Clr.Fg, p.Clr.Bg)
 }
 
 func (w *TxLabel) HandleEvent(e tb.Event) bool {

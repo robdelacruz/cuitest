@@ -5,47 +5,43 @@ import (
 )
 
 type TxListbox struct {
-	Rect      TxRect
-	Margin    TxMargin
-	Color     TxColor
-	Cb        TxEventCB
+	Props     *TxProps
 	Items     []*TxItem
-	Settings  TxSetting
 	Sel       int
 	Scrollpos int
 }
 
-func NewTxListbox(rect TxRect, margin TxMargin, color TxColor, cb TxEventCB, items []*TxItem, settings TxSetting) *TxListbox {
-	// If not specified, automatically set width and height based on listbox items.
-	if rect.H == 0 {
-		rect.H = len(items) + margin.T + margin.B
+func NewTxListbox(props *TxProps, items []*TxItem) *TxListbox {
+	if props == nil {
+		props = defaultProps()
 	}
-	if rect.W == 0 {
+
+	// If not specified, automatically set width and height based on listbox items.
+	if props.Rect.H == 0 {
+		props.Rect.H = len(items) + props.Margin.T + props.Margin.B
+	}
+	if props.Rect.W == 0 {
 		maxlen := 0
 		for _, item := range items {
 			if len(item.Display) > maxlen {
 				maxlen = len(item.Display)
 			}
 		}
-		rect.W = maxlen + margin.L + margin.R
+		props.Rect.W = maxlen + props.Margin.L + props.Margin.R
 	}
 
 	// Truncate listbox item text that go beyond width.
 	for i, item := range items {
-		if len(item.Display) > rect.W-margin.L-margin.R {
-			items[i].Display = item.Display[:rect.W-margin.L-margin.R]
+		if len(item.Display) > props.Rect.W-props.Margin.L-props.Margin.R {
+			items[i].Display = item.Display[:props.Rect.W-props.Margin.L-props.Margin.R]
 		}
 	}
 
-	initColor(&color)
+	initColor(&props.Clr)
 
 	w := TxListbox{
-		Rect:      rect,
-		Margin:    margin,
-		Color:     color,
-		Cb:        cb,
+		Props:     props,
 		Items:     items,
-		Settings:  settings,
 		Sel:       0,
 		Scrollpos: 0,
 	}
@@ -54,14 +50,15 @@ func NewTxListbox(rect TxRect, margin TxMargin, color TxColor, cb TxEventCB, ite
 }
 
 func (w *TxListbox) Draw() {
-	clearRect(w.Rect, w.Color.Bg)
+	p := w.Props
+	clearRect(p.Rect, p.Clr.Bg)
 
-	if w.Settings&TxFmtBox != 0 {
-		boxRect := addRectBox(w.Rect)
-		drawBox(boxRect, w.Color.Fg, w.Color.Bg)
+	if p.Fmt&TxFmtBox != 0 {
+		boxRect := addRectBox(p.Rect)
+		drawBox(boxRect, p.Clr.Fg, p.Clr.Bg)
 	}
 
-	contentRect := addRectMargin(w.Rect, w.Margin)
+	contentRect := addRectMargin(p.Rect, p.Margin)
 
 	starti := w.Scrollpos
 	endi := w.Scrollpos + contentRect.H - 1
@@ -74,10 +71,10 @@ func (w *TxListbox) Draw() {
 		item := w.Items[i]
 		if w.Sel == i {
 			// Highlight selected item.
-			printspaces(w.Rect.W, w.Rect.X, y, w.Color.HighlightFg, w.Color.HighlightBg)
-			printw(item.Display, contentRect.X, y, w.Color.HighlightFg, w.Color.HighlightBg, contentRect.W)
+			printspaces(p.Rect.W, p.Rect.X, y, p.Clr.HighlightFg, p.Clr.HighlightBg)
+			printw(item.Display, contentRect.X, y, p.Clr.HighlightFg, p.Clr.HighlightBg, contentRect.W)
 		} else {
-			printw(item.Display, contentRect.X, y, w.Color.Fg, w.Color.Bg, contentRect.W)
+			printw(item.Display, contentRect.X, y, p.Clr.Fg, p.Clr.Bg, contentRect.W)
 		}
 		y++
 	}
@@ -109,7 +106,7 @@ func (w *TxListbox) HandleEvent(e tb.Event) bool {
 		w.postSelItemEvent()
 		return true
 	case tb.KeyEnter:
-		if w.Cb == nil {
+		if w.Props.EventCB == nil {
 			return true
 		}
 		if len(w.Items) == 0 || w.Sel > len(w.Items)-1 {
@@ -119,23 +116,23 @@ func (w *TxListbox) HandleEvent(e tb.Event) bool {
 			Code: TxEventEnter,
 			Item: w.Items[w.Sel],
 		}
-		w.Cb(&we)
+		w.Props.EventCB(&we)
 		return true
 	case tb.KeyEsc:
-		if w.Cb == nil {
+		if w.Props.EventCB == nil {
 			return true
 		}
 		we := TxEvent{
 			Code: TxEventEsc,
 		}
-		w.Cb(&we)
+		w.Props.EventCB(&we)
 		return true
 	}
 	return false
 }
 
 func (w *TxListbox) adjustScroll() {
-	rect := addRectMargin(w.Rect, w.Margin)
+	rect := addRectMargin(w.Props.Rect, w.Props.Margin)
 	starti := w.Scrollpos
 	endi := w.Scrollpos + rect.H - 1
 
@@ -160,7 +157,7 @@ func (w *TxListbox) SelItem() *TxItem {
 }
 
 func (w *TxListbox) postSelItemEvent() {
-	if w.Cb == nil {
+	if w.Props.EventCB == nil {
 		return
 	}
 	if len(w.Items) == 0 || w.Sel > len(w.Items)-1 {
@@ -170,5 +167,5 @@ func (w *TxListbox) postSelItemEvent() {
 		Code: TxEventSel,
 		Item: w.Items[w.Sel],
 	}
-	w.Cb(&we)
+	w.Props.EventCB(&we)
 }

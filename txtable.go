@@ -6,10 +6,10 @@ import (
 )
 
 type TxCellSetting struct {
-	Sfmt     string
-	X, W     int
-	Color    TxColor
-	Settings TxSetting
+	Sfmt string
+	X, W int
+	Clr  TxColor
+	Fmt  TxFmt
 }
 
 type TxCell interface{}
@@ -21,71 +21,68 @@ type TxTableRow struct {
 }
 
 type TxTable struct {
-	Rect         TxRect
-	Margin       TxMargin
-	Color        TxColor
-	ColorHeading TxColor
-	Cb           TxEventCB
-	Cols         []*TxCellSetting
-	Headings     []string
-	Rows         []*TxTableRow
-	Settings     TxSetting
-	Sel          int
-	Scrollpos    int
+	Props      *TxProps
+	HeadingClr TxColor
+	Cols       []*TxCellSetting
+	Headings   []string
+	Rows       []*TxTableRow
+	Sel        int
+	Scrollpos  int
 }
 
-func NewTxTable(rect TxRect, margin TxMargin, color TxColor, colorHeading TxColor, cb TxEventCB, cols []*TxCellSetting, headings []string, rows []*TxTableRow, settings TxSetting) *TxTable {
+func NewTxTable(props *TxProps, headingclr TxColor, cols []*TxCellSetting, headings []string, rows []*TxTableRow) *TxTable {
+	if props == nil {
+		props = defaultProps()
+	}
+
 	// If not specified, automatically set width and height based on column settings.
-	if rect.H == 0 {
-		rect.H = len(rows) + margin.T + margin.B
+	if props.Rect.H == 0 {
+		props.Rect.H = len(rows) + props.Margin.T + props.Margin.B
 		if len(headings) > 0 {
-			rect.H += 1
+			props.Rect.H += 1
 		}
 	}
-	if rect.W == 0 {
+	if props.Rect.W == 0 {
 		maxlen := 0
 		for _, col := range cols {
 			if col.X+col.W > maxlen {
 				maxlen = col.X + col.W
 			}
 		}
-		rect.W = maxlen + margin.L + margin.R
+		props.Rect.W = maxlen + props.Margin.L + props.Margin.R
 	}
 
-	initColor(&color)
-	if colorHeading.Fg == 0 {
-		colorHeading.Fg = color.Fg
+	initColor(&props.Clr)
+	if headingclr.Fg == 0 {
+		headingclr.Fg = props.Clr.Fg
 	}
-	if colorHeading.Bg == 0 {
-		colorHeading.Bg = color.Bg
+	if headingclr.Bg == 0 {
+		headingclr.Bg = props.Clr.Bg
 	}
 
 	w := TxTable{
-		Rect:         rect,
-		Margin:       margin,
-		Color:        color,
-		ColorHeading: colorHeading,
-		Cb:           cb,
-		Cols:         cols,
-		Headings:     headings,
-		Rows:         rows,
-		Settings:     settings,
-		Sel:          0,
-		Scrollpos:    0,
+		Props:      props,
+		HeadingClr: headingclr,
+		Cols:       cols,
+		Headings:   headings,
+		Rows:       rows,
+		Sel:        0,
+		Scrollpos:  0,
 	}
 
 	return &w
 }
 
 func (w *TxTable) Draw() {
-	clearRect(w.Rect, w.Color.Bg)
+	p := w.Props
+	clearRect(p.Rect, p.Clr.Bg)
 
-	if w.Settings&TxFmtBox != 0 {
-		boxRect := addRectBox(w.Rect)
-		drawBox(boxRect, w.Color.Fg, w.Color.Bg)
+	if p.Fmt&TxFmtBox != 0 {
+		boxRect := addRectBox(p.Rect)
+		drawBox(boxRect, p.Clr.Fg, p.Clr.Bg)
 	}
 
-	contentRect := addRectMargin(w.Rect, w.Margin)
+	contentRect := addRectMargin(p.Rect, p.Margin)
 
 	starti := w.Scrollpos
 	endi := w.Scrollpos + contentRect.H - 1
@@ -98,7 +95,7 @@ func (w *TxTable) Draw() {
 				continue
 			}
 			col := w.Cols[icol]
-			print(heading, contentRect.X+col.X, y, w.ColorHeading.Fg, w.ColorHeading.Bg)
+			print(heading, contentRect.X+col.X, y, w.HeadingClr.Fg, w.HeadingClr.Bg)
 		}
 		y++
 		endi = endi - 1
@@ -112,7 +109,7 @@ func (w *TxTable) Draw() {
 	for irow := starti; irow <= endi; irow++ {
 		if w.Sel == irow {
 			// Highlight selected row.
-			printspaces(w.Rect.W, w.Rect.X, y, w.Color.HighlightFg, w.Color.HighlightBg)
+			printspaces(p.Rect.W, p.Rect.X, y, p.Clr.HighlightFg, p.Clr.HighlightBg)
 		}
 
 		row := w.Rows[irow]
@@ -126,19 +123,19 @@ func (w *TxTable) Draw() {
 			col := w.Cols[icol]
 
 			// CellSetting color overrides Table color.
-			fg := w.Color.Fg
-			if col.Color.Fg != 0 {
-				fg = col.Color.Fg
+			fg := p.Clr.Fg
+			if col.Clr.Fg != 0 {
+				fg = col.Clr.Fg
 			}
-			bg := w.Color.Bg
-			if col.Color.Bg != 0 {
-				bg = col.Color.Bg
+			bg := p.Clr.Bg
+			if col.Clr.Bg != 0 {
+				bg = col.Clr.Bg
 			}
 
 			// Use highlight color for cell when in selected row.
 			if w.Sel == irow {
-				fg = w.Color.HighlightFg
-				bg = w.Color.HighlightBg
+				fg = p.Clr.HighlightFg
+				bg = p.Clr.HighlightBg
 			}
 
 			var scell string
@@ -147,7 +144,7 @@ func (w *TxTable) Draw() {
 			} else {
 				scell = fmt.Sprintf("%v", cell)
 			}
-			if col.Settings&TxFmtCenter != 0 {
+			if col.Fmt&TxFmtCenter != 0 {
 				printcenter(scell, contentRect.X+col.X, y, fg, bg, col.W)
 			} else {
 				printw(scell, contentRect.X+col.X, y, fg, bg, col.W)
@@ -183,7 +180,7 @@ func (w *TxTable) HandleEvent(e tb.Event) bool {
 		w.postSelItemEvent()
 		return true
 	case tb.KeyEnter:
-		if w.Cb == nil {
+		if w.Props.EventCB == nil {
 			return true
 		}
 		item := w.SelItem()
@@ -194,23 +191,23 @@ func (w *TxTable) HandleEvent(e tb.Event) bool {
 			Code: TxEventEnter,
 			Item: item,
 		}
-		w.Cb(&we)
+		w.Props.EventCB(&we)
 		return true
 	case tb.KeyEsc:
-		if w.Cb == nil {
+		if w.Props.EventCB == nil {
 			return true
 		}
 		we := TxEvent{
 			Code: TxEventEsc,
 		}
-		w.Cb(&we)
+		w.Props.EventCB(&we)
 		return true
 	}
 	return false
 }
 
 func (w *TxTable) adjustScroll() {
-	rect := addRectMargin(w.Rect, w.Margin)
+	rect := addRectMargin(w.Props.Rect, w.Props.Margin)
 	starti := w.Scrollpos
 	endi := w.Scrollpos + rect.H - 1
 
@@ -241,7 +238,7 @@ func (w *TxTable) SelItem() *TxItem {
 }
 
 func (w *TxTable) postSelItemEvent() {
-	if w.Cb == nil {
+	if w.Props.EventCB == nil {
 		return
 	}
 	item := w.SelItem()
@@ -252,7 +249,7 @@ func (w *TxTable) postSelItemEvent() {
 		Code: TxEventSel,
 		Item: item,
 	}
-	w.Cb(&we)
+	w.Props.EventCB(&we)
 }
 
 func (w *TxTable) SetRows(rows []*TxTableRow) {

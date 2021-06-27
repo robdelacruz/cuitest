@@ -8,25 +8,25 @@ import (
 )
 
 type TxEntry struct {
-	Rect         TxRect
-	Margin       TxMargin
-	Color        TxColor
-	Cb           TxEventCB
+	Props        *TxProps
 	Text         string
 	ValidatorReg *regexp.Regexp
-	Settings     TxSetting
 	Cur          TxPos
 }
 
-func NewTxEntry(rect TxRect, margin TxMargin, color TxColor, cb TxEventCB, text string, svalidator string, settings TxSetting) *TxEntry {
-	if rect.H == 0 {
-		rect.H = 1
-	}
-	if rect.W == 0 {
-		rect.W = 10
+func NewTxEntry(props *TxProps, text string, svalidator string) *TxEntry {
+	if props == nil {
+		props = defaultProps()
 	}
 
-	initColor(&color)
+	if props.Rect.H == 0 {
+		props.Rect.H = 1
+	}
+	if props.Rect.W == 0 {
+		props.Rect.W = 10
+	}
+
+	initColor(&props.Clr)
 
 	var validatorReg *regexp.Regexp
 	if svalidator != "" {
@@ -45,13 +45,9 @@ func NewTxEntry(rect TxRect, margin TxMargin, color TxColor, cb TxEventCB, text 
 	}
 
 	w := TxEntry{
-		Rect:         rect,
-		Margin:       margin,
-		Color:        color,
-		Cb:           cb,
+		Props:        props,
 		Text:         "",
 		ValidatorReg: validatorReg,
-		Settings:     settings,
 		Cur:          TxPos{0, 0},
 	}
 	if text != "" {
@@ -61,22 +57,23 @@ func NewTxEntry(rect TxRect, margin TxMargin, color TxColor, cb TxEventCB, text 
 }
 
 func (w *TxEntry) Draw() {
-	clearRect(w.Rect, w.Color.Bg)
+	p := w.Props
+	clearRect(p.Rect, p.Clr.Bg)
 
-	if w.Settings&TxFmtBox != 0 {
-		boxRect := addRectBox(w.Rect)
-		drawBox(boxRect, w.Color.Fg, w.Color.Bg)
+	if p.Fmt&TxFmtBox != 0 {
+		boxRect := addRectBox(p.Rect)
+		drawBox(boxRect, p.Clr.Fg, p.Clr.Bg)
 	}
 
-	rect := addRectMargin(w.Rect, w.Margin)
-	printw(w.Text, rect.X, rect.Y, w.Color.Fg, w.Color.Bg, rect.W)
+	rect := addRectMargin(p.Rect, p.Margin)
+	printw(w.Text, rect.X, rect.Y, p.Clr.Fg, p.Clr.Bg, rect.W)
 
 	// Print cursor
 	curCh := ' '
 	if w.Cur.X <= len(w.Text)-1 {
 		curCh = rune(w.Text[w.Cur.X])
 	}
-	tb.SetCell(rect.X+w.Cur.X, rect.Y, curCh, w.Color.HighlightFg, w.Color.HighlightBg)
+	tb.SetCell(rect.X+w.Cur.X, rect.Y, curCh, p.Clr.HighlightFg, p.Clr.HighlightBg)
 }
 
 func (w *TxEntry) HandleEvent(e tb.Event) bool {
@@ -97,11 +94,11 @@ func (w *TxEntry) HandleEvent(e tb.Event) bool {
 		}
 		return true
 	case tb.KeyEsc:
-		if w.Cb != nil {
+		if w.Props.EventCB != nil {
 			we := TxEvent{
 				Code: TxEventEsc,
 			}
-			w.Cb(&we)
+			w.Props.EventCB(&we)
 		}
 		return true
 	case tb.KeyArrowLeft:
